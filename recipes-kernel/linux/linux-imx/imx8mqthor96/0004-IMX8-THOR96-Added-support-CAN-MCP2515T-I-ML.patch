@@ -1,0 +1,131 @@
+From 49f098e9e27ed2c6d31c4ea62cbbc9ff426e54e9 Mon Sep 17 00:00:00 2001
+From: "darshak.patel" <darshak.patel@einfochips.com>
+Date: Wed, 9 Dec 2020 17:01:50 +0530
+Subject: [PATCH 04/18] IMX8 THOR96: Added support CAN MCP2515T-I/ML
+
+Commands for testing:
+$ ip link set can0 type can bitrate 125000;ifconfig can0 up
+
+Configure one board as receiver
+$ candump can0 &
+
+Configure another board as sender and send data
+$ cansend can0 18FC2A00#0100000000000000
+---
+ .../boot/dts/freescale/imx8mq-thor96.dts      | 49 ++++++++++++++++++-
+ arch/arm64/configs/defconfig                  |  5 ++
+ 2 files changed, 53 insertions(+), 1 deletion(-)
+
+diff --git a/arch/arm64/boot/dts/freescale/imx8mq-thor96.dts b/arch/arm64/boot/dts/freescale/imx8mq-thor96.dts
+index a967c16bdae9..52794f31c7dd 100755
+--- a/arch/arm64/boot/dts/freescale/imx8mq-thor96.dts
++++ b/arch/arm64/boot/dts/freescale/imx8mq-thor96.dts
+@@ -17,6 +17,14 @@
+		stdout-path = &uart1;
+	};
+
++	clocks {
++		clk24M: can_clock {
++			compatible = "fixed-clock";
++			#clock-cells = <0>;
++			clock-frequency = <20000000>;
++		};
++	};
++
+	memory@40000000 {
+		device_type = "memory";
+		reg = <0x00000000 0x40000000 0 0xc0000000>;
+@@ -168,6 +176,14 @@
+		};
+	};
+
++	can_reset: can-reset {
++		compatible = "gpio-reset";
++		reset-gpios = <&gpio3 25 GPIO_ACTIVE_LOW>;
++		reset-delay-us = <2000>;
++		reset-post-delay-ms = <40>;
++		#reset-cells = <0>;
++	};
++
+	sound-hdmi {
+		compatible = "fsl,imx8mq-evk-cdnhdmi",
+				"fsl,imx-audio-cdnhdmi";
+@@ -775,6 +791,26 @@
+	status = "okay";
+ };
+
++&ecspi1 {
++		pinctrl-names = "default";
++		pinctrl-0 = <&pinctrl_ecspi1>;
++		fsl,spi-num-chipselects = <1>;
++		cs-gpios = <&gpio1 1 GPIO_ACTIVE_LOW>;
++		spi-max-frequency = <10000000>;
++		status = "okay";
++
++	can0: can@0 {
++		pinctrl-names = "default";
++		compatible = "microchip,mcp2515";
++		reg = <0>;
++		spi-max-frequency = <1000000>;
++		clocks = <&clk24M>;
++		interrupt-parent = <&gpio1>;
++		interrupts = <6 0x02>;
++		status = "okay";
++	};
++};
++
+ &usdhc1 {
+	pinctrl-names = "default", "state_100mhz", "state_200mhz";
+	pinctrl-0 = <&pinctrl_usdhc1>;
+@@ -819,6 +855,18 @@
+		>;
+	};
+
++        pinctrl_ecspi1: ecspi1grp { /*can spi interface*/
++                fsl,pins = <
++                        MX8MQ_IOMUXC_ECSPI1_SCLK_ECSPI1_SCLK    0x16
++                        MX8MQ_IOMUXC_ECSPI1_MOSI_ECSPI1_MOSI    0x16
++                        MX8MQ_IOMUXC_ECSPI1_MISO_ECSPI1_MISO    0x16
++                        MX8MQ_IOMUXC_GPIO1_IO01_GPIO1_IO1               0x16
++                        MX8MQ_IOMUXC_SAI5_MCLK_GPIO3_IO25               0x19 /*reset*/
++                        MX8MQ_IOMUXC_GPIO1_IO06_GPIO1_IO6               0x19
++
++                >;
++        };
++
+	pinctrl_buck2: vddarmgrp {
+		fsl,pins = <
+			MX8MQ_IOMUXC_GPIO1_IO13_GPIO1_IO13		0x19
+@@ -1001,7 +1049,6 @@
+
+	pinctrl_sai5: sai5grp {
+		fsl,pins = <
+-			MX8MQ_IOMUXC_SAI5_MCLK_SAI5_MCLK	0xd6
+			MX8MQ_IOMUXC_SAI5_RXC_SAI5_RX_BCLK	0xd6
+			MX8MQ_IOMUXC_SAI5_RXFS_SAI5_RX_SYNC	0xd6
+			MX8MQ_IOMUXC_SAI5_RXD0_SAI5_RX_DATA0	0xd6
+diff --git a/arch/arm64/configs/defconfig b/arch/arm64/configs/defconfig
+index 5713029b612a..04997b1d1f74 100644
+--- a/arch/arm64/configs/defconfig
++++ b/arch/arm64/configs/defconfig
+@@ -119,6 +119,10 @@ CONFIG_CRYPTO_AES_ARM64_CE_CCM=y
+ CONFIG_CRYPTO_AES_ARM64_CE_BLK=y
+ CONFIG_CRYPTO_CHACHA20_NEON=m
+ CONFIG_CRYPTO_AES_ARM64_BS=m
++#
++# CAN SPI interfaces
++#
++CONFIG_CAN_MCP251X=y
+ CONFIG_JUMP_LABEL=y
+ CONFIG_MODULES=y
+ CONFIG_MODULE_UNLOAD=y
+@@ -167,6 +171,7 @@ CONFIG_QRTR_TUN=m
+ CONFIG_BPF_JIT=y
+ CONFIG_CAN=m
+ CONFIG_CAN_FLEXCAN=m
++CONFIG_CAN_MCP251X=y
+ CONFIG_BT=y
+ CONFIG_BT_RFCOMM=y
+ CONFIG_BT_RFCOMM_TTY=y
+--
+2.17.1

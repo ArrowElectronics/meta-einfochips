@@ -1,0 +1,27 @@
+From 4cb4f0765c9e6633c4fd79af3c92df7513dd7231 Mon Sep 17 00:00:00 2001
+From: "darshak.patel" <darshak.patel@einfochips.com>
+Date: Mon, 14 Dec 2020 12:28:39 +0530
+Subject: [PATCH 17/18] IMX8 THOR96: Enable ethernet support
+
+---
+ arch/arm64/boot/dts/freescale/imx8mq-thor96.dts | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/arch/arm64/boot/dts/freescale/imx8mq-thor96.dts b/arch/arm64/boot/dts/freescale/imx8mq-thor96.dts
+index 97928732c6d6..a0ec7da005f2 100755
+--- a/arch/arm64/boot/dts/freescale/imx8mq-thor96.dts
++++ b/arch/arm64/boot/dts/freescale/imx8mq-thor96.dts
+@@ -322,9 +322,9 @@
+		#address-cells = <1>;
+		#size-cells = <0>;
+
+-		ethphy0: ethernet-phy@0 {
++		ethphy0: ethernet-phy@3 {
+			compatible = "ethernet-phy-ieee802.3-c22";
+-			reg = <0>;
++			reg = <3>;
+			at803x,eee-disabled;
+		};
+	};
+--
+2.17.1

@@ -1,0 +1,392 @@
+From cec5af7008b0c07d4be15d4700473938dd275bac Mon Sep 17 00:00:00 2001
+From: "darshak.patel" <darshak.patel@einfochips.com>
+Date: Wed, 9 Dec 2020 19:07:28 +0530
+Subject: [PATCH 07/18] IMX8 THOR96: Added support for adau1361 codec
+
+1. Added Machine layer driver
+2. Added dts entry for adau1361 and machine layer driver
+3. enable codec driver in depth config
+---
+ .../boot/dts/freescale/imx8mq-thor96.dts      |  44 ++--
+ arch/arm64/configs/defconfig                  |   1 +
+ sound/soc/fsl/Kconfig                         |  13 +
+ sound/soc/fsl/Makefile                        |   2 +
+ sound/soc/fsl/imx_adau1361v1.c                | 234 ++++++++++++++++++
+ 5 files changed, 280 insertions(+), 14 deletions(-)
+ create mode 100644 sound/soc/fsl/imx_adau1361v1.c
+
+diff --git a/arch/arm64/boot/dts/freescale/imx8mq-thor96.dts b/arch/arm64/boot/dts/freescale/imx8mq-thor96.dts
+index 2012eb57fe44..9f1ff6419ede 100755
+--- a/arch/arm64/boot/dts/freescale/imx8mq-thor96.dts
++++ b/arch/arm64/boot/dts/freescale/imx8mq-thor96.dts
+@@ -209,6 +209,13 @@
+		spdif-in;
+	};
+
++        sound-adau1361 {
++                compatible = "fsl,imx-adau1361";
++                model = "adau1361-audio";
++                audio-cpu = <&sai1>;
++                audio-codec = <&adau1361>;
++        };
++
+	sound-hdmi-arc {
+		compatible = "fsl,imx-audio-spdif";
+		model = "imx-hdmi-arc";
+@@ -343,21 +350,14 @@
+ };
+
+ &sai1 {
+-	pinctrl-names = "default", "pcm_b2m", "dsd";
+-	pinctrl-0 = <&pinctrl_sai1_pcm>;
+-	pinctrl-1 = <&pinctrl_sai1_pcm_b2m>;
+-	pinctrl-2 = <&pinctrl_sai1_dsd>;
+-	assigned-clocks = <&clk IMX8MQ_CLK_SAI1>;
++
++	pinctrl-names = "default";
++	pinctrl-0 = <&pinctrl_sai1>;
++	assigned-clocks = <&clk IMX8MQ_CLK_SAI1>,
++						<&clk IMX8MQ_CLK_SAI1>;
++
+	assigned-clock-parents = <&clk IMX8MQ_AUDIO_PLL1_OUT>;
+-	assigned-clock-rates = <49152000>;
+-	clocks = <&clk IMX8MQ_CLK_SAI1_IPG>, <&clk IMX8MQ_CLK_DUMMY>,
+-		<&clk IMX8MQ_CLK_SAI1_ROOT>, <&clk IMX8MQ_CLK_DUMMY>,
+-		<&clk IMX8MQ_CLK_DUMMY>, <&clk IMX8MQ_AUDIO_PLL1_OUT>,
+-		<&clk IMX8MQ_AUDIO_PLL2_OUT>;
+-	clock-names = "bus", "mclk0", "mclk1", "mclk2", "mclk3", "pll8k", "pll11k";
+-	fsl,sai-multi-lane;
+-	fsl,dataline,dsd = <0 0xff 0xff 2 0xff 0x11>;
+-	dmas = <&sdma2 8 25 0>, <&sdma2 9 25 0>;
++	assigned-clock-rates = <0>, <12288000>;
+	status = "okay";
+ };
+
+@@ -654,6 +654,12 @@
+		pagesize = <32>;
+		status = "okay";
+	};
++
++	adau1361:adau1361@38 {
++		compatible = "adi,adau1361";
++		reg = <0x38>;
++		status = "okay";
++	};
+ };
+
+ &i2c4 {
+@@ -998,6 +1004,16 @@
+		>;
+	};
+
++	pinctrl_sai1: sai1grp {
++		fsl,pins = <
++			MX8MQ_IOMUXC_SAI1_MCLK_SAI1_MCLK                0xd6
++			MX8MQ_IOMUXC_SAI1_TXC_SAI1_TX_BCLK              0xd6
++			MX8MQ_IOMUXC_SAI1_TXFS_SAI1_TX_SYNC             0xd6
++			MX8MQ_IOMUXC_SAI1_RXD0_SAI1_RX_DATA0            0xd6
++			MX8MQ_IOMUXC_SAI1_TXD0_SAI1_TX_DATA0            0xd6
++		>;
++	};
++
+	pinctrl_sai2: sai2grp {
+		fsl,pins = <
+			MX8MQ_IOMUXC_SAI2_TXFS_SAI2_TX_SYNC     0xd6
+diff --git a/arch/arm64/configs/defconfig b/arch/arm64/configs/defconfig
+index 04997b1d1f74..cb6d46a51145 100644
+--- a/arch/arm64/configs/defconfig
++++ b/arch/arm64/configs/defconfig
+@@ -671,6 +671,7 @@ CONFIG_SND_SOC_IMX_AK5558=y
+ CONFIG_SND_SOC_IMX_AK4497=y
+ CONFIG_SND_SOC_IMX_WM8960=y
+ CONFIG_SND_SOC_IMX_WM8524=y
++CONFIG_SND_SOC_IMX_ADAU1361=y
+ CONFIG_SND_SOC_IMX_CS42888=y
+ CONFIG_SND_SOC_IMX_MICFIL=y
+ CONFIG_SND_SOC_IMX_RPMSG=y
+diff --git a/sound/soc/fsl/Kconfig b/sound/soc/fsl/Kconfig
+index b96947d6c026..ebe29a9cd411 100644
+--- a/sound/soc/fsl/Kconfig
++++ b/sound/soc/fsl/Kconfig
+@@ -380,6 +380,19 @@ config SND_SOC_IMX_WM8524
+	  Say Y if you want to add support for SoC audio on an i.MX board with
+	  a wm8524 codec.
+
++config SND_SOC_IMX_ADAU1361
++        tristate "SoC Audio support for i.MX boards with adau1361"
++        depends on OF && I2C
++        select SND_SOC_ADAU1761_I2C
++        select SND_SOC_IMX_PCM_DMA
++        select SND_SOC_FSL_SAI
++        select SND_SOC_FSL_UTILS
++        select SND_KCTL_JACK
++        help
++          SoC Audio support for i.MX boards with adau1361
++          Say Y if you want to add support for SoC audio on an i.MX board with
++          a adau1361 codec.
++
+ config SND_SOC_IMX_SII902X
+	tristate "SoC Audio support for i.MX boards with sii902x"
+	depends on OF && I2C
+diff --git a/sound/soc/fsl/Makefile b/sound/soc/fsl/Makefile
+index 827d6b0923b3..5230c969532f 100644
+--- a/sound/soc/fsl/Makefile
++++ b/sound/soc/fsl/Makefile
+@@ -87,6 +87,7 @@ snd-soc-imx-wm8958-objs := imx-wm8958.o
+ snd-soc-imx-wm8960-objs := imx-wm8960.o
+ snd-soc-imx-wm8524-objs := imx-wm8524.o
+ snd-soc-imx-wm8962-objs := imx-wm8962.o
++snd-soc-imx-adau1361-objs := imx_adau1361v1.o
+ snd-soc-imx-sii902x-objs := imx-sii902x.o
+ snd-soc-imx-spdif-objs := imx-spdif.o
+ snd-soc-imx-mc13783-objs := imx-mc13783.o
+@@ -117,6 +118,7 @@ obj-$(CONFIG_SND_SOC_IMX_WM8524) += snd-soc-imx-wm8524.o
+ obj-$(CONFIG_SND_SOC_IMX_WM8962) += snd-soc-imx-wm8962.o
+ obj-$(CONFIG_SND_SOC_IMX_SII902X) += snd-soc-imx-sii902x.o
+ obj-$(CONFIG_SND_SOC_IMX_RPMSG) += snd-soc-imx-rpmsg.o
++obj-$(CONFIG_SND_SOC_IMX_ADAU1361) += snd-soc-imx-adau1361.o
+ obj-$(CONFIG_SND_SOC_IMX_SPDIF) += snd-soc-imx-spdif.o
+ obj-$(CONFIG_SND_SOC_IMX_MC13783) += snd-soc-imx-mc13783.o
+ obj-$(CONFIG_SND_SOC_IMX_AUDMIX) += snd-soc-imx-audmix.o
+diff --git a/sound/soc/fsl/imx_adau1361v1.c b/sound/soc/fsl/imx_adau1361v1.c
+new file mode 100644
+index 000000000000..00a1a82888cf
+--- /dev/null
++++ b/sound/soc/fsl/imx_adau1361v1.c
+@@ -0,0 +1,234 @@
++/*copyright (C) 2015-2019 Einfochips Ltd.
++ *
++ * The code contained herein is licensed under the GNU General Public
++ * License. You may obtain a copy of the GNU General Public License
++ * Version 2 or later at the following locations:
++ *
++ * http://www.opensource.org/licenses/gpl-license.html
++ * http://www.gnu.org/copyleft/gpl.html
++ */
++
++#include <linux/module.h>
++#include <linux/of_platform.h>
++#include <linux/of_gpio.h>
++#include <linux/slab.h>
++#include <linux/gpio.h>
++#include <linux/clk.h>
++#include <sound/soc.h>
++#include <sound/jack.h>
++#include <sound/control.h>
++#include <sound/pcm_params.h>
++#include <sound/soc-dapm.h>
++#include <linux/pinctrl/consumer.h>
++#include <linux/mfd/syscon.h>
++
++#include "../codecs/adau17x1.h"
++
++struct imx_priv {
++	struct platform_device *pdev;
++	struct snd_soc_card card;
++	struct clk *codec_clk;
++	unsigned int clk_frequency;
++};
++
++static const struct snd_soc_dapm_widget imx_adau1361_dapm_widgets[] = {
++	SND_SOC_DAPM_LINE("In 1", NULL),
++	SND_SOC_DAPM_LINE("In 2", NULL),
++	SND_SOC_DAPM_LINE("In 3-4", NULL),
++
++	SND_SOC_DAPM_LINE("Diff Out L", NULL),
++	SND_SOC_DAPM_LINE("Diff Out R", NULL),
++	SND_SOC_DAPM_LINE("Stereo Out", NULL),
++	SND_SOC_DAPM_HP("Capless HP Out", NULL),
++};
++
++static const struct snd_soc_dapm_route adau1361_dapm_routes[] = {
++	{ "LAUX", NULL, "In 3-4" },
++	{ "RAUX", NULL, "In 3-4" },
++	{ "LINP", NULL, "In 1" },
++	{ "LINN", NULL, "In 1"},
++	{ "RINP", NULL, "In 2" },
++	{ "RINN", NULL, "In 2" },
++
++	{ "In 1", NULL, "MICBIAS" },
++	{ "In 2", NULL, "MICBIAS" },
++
++	{ "Capless HP Out", NULL, "LHP" },
++	{ "Capless HP Out", NULL, "RHP" },
++	{ "Diff Out L", NULL, "LOUT" },
++	{ "Diff Out R", NULL, "ROUT" },
++	{ "Stereo Out", NULL, "LOUT" },
++	{ "Stereo Out", NULL, "ROUT" },
++};
++
++static int imx_hifi_hw_params(struct snd_pcm_substream *substream,
++					struct snd_pcm_hw_params *params)
++{
++	struct snd_soc_pcm_runtime *rtd = substream->private_data;
++	struct snd_soc_dai *cpu_dai = rtd->cpu_dai;
++	struct snd_soc_dai *codec_dai = rtd->codec_dai;
++	int pll_rate;
++	int ret;
++
++	ret = snd_soc_dai_set_fmt(cpu_dai, SND_SOC_DAIFMT_I2S |
++			SND_SOC_DAIFMT_NB_NF | SND_SOC_DAIFMT_CBM_CFM);
++
++	if (ret) {
++		return ret;
++	}
++
++	ret = snd_soc_dai_set_fmt(codec_dai, SND_SOC_DAIFMT_I2S |
++			SND_SOC_DAIFMT_NB_NF | SND_SOC_DAIFMT_CBM_CFM);
++
++	if (ret) {
++		return ret;
++	}
++
++	switch (params_rate(params)) {
++	case 48000:
++	case 8000:
++	case 12000:
++	case 16000:
++	case 24000:
++	case 32000:
++	case 96000:
++		pll_rate = 48000 * 1024;
++		break;
++	case 44100:
++	case 7350:
++	case 11025:
++	case 14700:
++	case 22050:
++	case 29400:
++	case 88200:
++		pll_rate = 44100 * 1024;
++		break;
++	default:
++		return -EINVAL;
++	}
++
++	ret = snd_soc_dai_set_pll(codec_dai, ADAU17X1_PLL,
++			ADAU17X1_PLL_SRC_MCLK, 12288000, pll_rate);
++
++	if (ret) {
++		return ret;
++	}
++
++	ret = snd_soc_dai_set_sysclk(codec_dai, ADAU17X1_CLK_SRC_PLL, pll_rate,
++			SND_SOC_CLOCK_IN);
++
++	return ret;
++}
++
++static struct snd_soc_ops imx_hifi_ops = {
++	.hw_params = imx_hifi_hw_params,
++};
++
++SND_SOC_DAILINK_DEFS(hifi,
++        DAILINK_COMP_ARRAY(COMP_EMPTY()),
++        DAILINK_COMP_ARRAY(COMP_CODEC(NULL, "adau-hifi")),
++        DAILINK_COMP_ARRAY(COMP_EMPTY()));
++
++static struct snd_soc_dai_link imx_adau1361_dai[] = {
++	{
++		.name = "adau1361",
++		.stream_name = "adau1361",
++		.ops = &imx_hifi_ops,
++		SND_SOC_DAILINK_REG(hifi),
++	},
++};
++
++static int imx_adau1361_probe(struct platform_device *pdev)
++{
++	struct device_node *cpu_np, *codec_np = NULL;
++	struct platform_device *cpu_pdev;
++	struct imx_priv *priv;
++	struct platform_device *codec_pdev = NULL;
++	int ret;
++
++	priv = devm_kzalloc(&pdev->dev, sizeof(*priv), GFP_KERNEL);
++	if (!priv)
++		return -ENOMEM;
++
++	priv->pdev = pdev;
++
++	cpu_np = of_parse_phandle(pdev->dev.of_node, "audio-cpu", 0);
++	if (!cpu_np) {
++		dev_err(&pdev->dev, "cpu dai phandle missing or invalid\n");
++		ret = -EINVAL;
++		goto fail;
++	}
++
++	codec_np = of_parse_phandle(pdev->dev.of_node, "audio-codec", 0);
++	if (!codec_np) {
++		dev_err(&pdev->dev, "phandle missing or invalid\n");
++		ret = -EINVAL;
++		goto fail;
++	}
++
++	cpu_pdev = of_find_device_by_node(cpu_np);
++	if (!cpu_pdev) {
++		dev_err(&pdev->dev, "failed to find SAI platform device\n");
++		ret = -EINVAL;
++		goto fail;
++	}
++
++	priv->card.dai_link = imx_adau1361_dai;
++
++	imx_adau1361_dai[0].codecs->of_node = codec_np;
++	imx_adau1361_dai[0].cpus->dai_name = dev_name(&cpu_pdev->dev);
++	imx_adau1361_dai[0].platforms->of_node = cpu_np;
++	imx_adau1361_dai[0].codecs->dai_name = "adau-hifi";
++	imx_adau1361_dai[0].codecs->of_node  = codec_np;
++
++	priv->card.num_links = 1;
++	priv->card.dev = &pdev->dev;
++	priv->card.owner = THIS_MODULE;
++	priv->card.dapm_routes = adau1361_dapm_routes;
++	priv->card.num_dapm_routes = ARRAY_SIZE(adau1361_dapm_routes);
++	priv->card.dapm_widgets = imx_adau1361_dapm_widgets;
++	priv->card.num_dapm_widgets = ARRAY_SIZE(imx_adau1361_dapm_widgets);
++	priv->card.fully_routed = true;
++
++	ret = snd_soc_of_parse_card_name(&priv->card, "model");
++	if (ret)
++		goto fail;
++
++	snd_soc_card_set_drvdata(&priv->card, priv);
++
++	ret = devm_snd_soc_register_card(&pdev->dev, &priv->card);
++	if (ret) {
++		dev_err(&pdev->dev, "snd_soc_register_card failed (%d)\n", ret);
++		goto fail;
++	}
++
++	ret = 0;
++fail:
++	if (cpu_np)
++		of_node_put(cpu_np);
++	if (codec_np)
++		of_node_put(codec_np);
++
++	return ret;
++}
++
++static const struct of_device_id imx_adau1361_dt_ids[] = {
++	{ .compatible = "fsl,imx-adau1361", },
++	{ /* sentinel */ }
++};
++MODULE_DEVICE_TABLE(of, imx_adau1361_dt_ids);
++
++static struct platform_driver imx_adau1361_driver = {
++	.driver = {
++		.name = "imx-adau1361",
++		.pm = &snd_soc_pm_ops,
++		.of_match_table = imx_adau1361_dt_ids,
++	},
++	.probe = imx_adau1361_probe,
++};
++module_platform_driver(imx_adau1361_driver);
++
++MODULE_AUTHOR("Parth Modi");
++MODULE_DESCRIPTION("Freescale i.MX ADAU1361 ASoC machine driver");
++MODULE_LICENSE("GPL v2");
++MODULE_ALIAS("platform:imx-adau1361");
+--
+2.17.1

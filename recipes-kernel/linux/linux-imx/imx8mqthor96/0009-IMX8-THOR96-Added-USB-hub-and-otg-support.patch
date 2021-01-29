@@ -1,0 +1,522 @@
+From 721dc3aa00fc1ac0646a6dfa4be279e09c2b0c26 Mon Sep 17 00:00:00 2001
+From: "darshak.patel" <darshak.patel@einfochips.com>
+Date: Thu, 10 Dec 2020 15:27:09 +0530
+Subject: [PATCH 09/18] IMX8 THOR96: Added USB hub and otg support
+
+1.Added otg device and host support for micro-ab usb as otg can support only one at a time
+2.Added support for usb hub
+3.Added defconfig changes for USB OTG
+---
+ arch/arm64/boot/dts/freescale/Makefile        |   5 +-
+ .../dts/freescale/imx8mq-thor96-otg-host.dts  |  26 ++
+ .../boot/dts/freescale/imx8mq-thor96.dts      |  37 ++-
+ drivers/extcon/Kconfig                        |   8 +
+ drivers/extcon/Makefile                       |   1 +
+ drivers/extcon/extcon-usb-gpio-vbus.c         | 280 ++++++++++++++++++
+ drivers/usb/dwc3/dwc3-of-simple.c             |  42 +++
+ 7 files changed, 375 insertions(+), 24 deletions(-)
+ create mode 100644 arch/arm64/boot/dts/freescale/imx8mq-thor96-otg-host.dts
+ create mode 100644 drivers/extcon/extcon-usb-gpio-vbus.c
+
+diff --git a/arch/arm64/boot/dts/freescale/Makefile b/arch/arm64/boot/dts/freescale/Makefile
+index 3edfad504661..0af6cc844984 100644
+--- a/arch/arm64/boot/dts/freescale/Makefile
++++ b/arch/arm64/boot/dts/freescale/Makefile
+@@ -72,11 +72,8 @@ dtb-$(CONFIG_ARCH_MXC) += imx8mp-evk.dtb imx8mp-evk-root.dtb imx8mp-evk-inmate.d
+ dtb-$(CONFIG_ARCH_MXC) += imx8mq-evk.dtb imx8mq-evk-rpmsg.dtb imx8mq-evk-pcie1-m2.dtb imx8mq-evk-usd-wifi.dtb \
+			  imx8mq-evk-usdhc2-m2.dtb imx8mq-evk-pcie-ep.dtb
+ dtb-$(CONFIG_ARCH_MXC) += imx8mq-evk-ak4497.dtb imx8mq-evk-audio-tdm.dtb imx8mq-evk-pdm.dtb
+-dtb-$(CONFIG_ARCH_MXC) += imx8mq-evk-root.dtb imx8mq-evk-inmate.dtb
+-dtb-$(CONFIG_ARCH_MXC) += imx8mq-evk-lcdif-rm67191.dtb imx8mq-evk-lcdif-adv7535.dtb
+ dtb-$(CONFIG_ARCH_MXC) += imx8mq-hummingboard-pulse.dtb
+-dtb-$(CONFIG_ARCH_MXC) += imx8mq-evk-dcss-rm67191.dtb imx8mq-evk-dcss-adv7535.dtb
+-dtb-$(CONFIG_ARCH_MXC) += imx8mq-evk-dual-display.dtb
++dtb-$(CONFIG_ARCH_MXC) += imx8mq-thor96-otg-host.dtb
+ dtb-$(CONFIG_ARCH_MXC) += imx8mq-librem5-devkit.dtb
+ dtb-$(CONFIG_ARCH_MXC) += imx8mq-nitrogen.dtb
+ dtb-$(CONFIG_ARCH_MXC) += imx8mq-pico-pi.dtb
+diff --git a/arch/arm64/boot/dts/freescale/imx8mq-thor96-otg-host.dts b/arch/arm64/boot/dts/freescale/imx8mq-thor96-otg-host.dts
+new file mode 100644
+index 000000000000..6f6aede7d3aa
+--- /dev/null
++++ b/arch/arm64/boot/dts/freescale/imx8mq-thor96-otg-host.dts
+@@ -0,0 +1,26 @@
++/*
++ * Copyright 2017 NXP
++ *
++ * This program is free software; you can redistribute it and/or
++ * modify it under the terms of the GNU General Public License
++ * as published by the Free Software Foundation; either version 2
++ * of the License, or (at your option) any later version.
++ *
++ * This program is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ * GNU General Public License for more details.
++ */
++
++#include "imx8mq-thor96.dts"
++
++&usb_dwc3_0 {
++
++       dr_mode = "host";
++       hnp-disable;
++       srp-disable;
++       adp-disable;
++
++       status = "okay";
++};
++
+diff --git a/arch/arm64/boot/dts/freescale/imx8mq-thor96.dts b/arch/arm64/boot/dts/freescale/imx8mq-thor96.dts
+index 50953ea0e872..6d3f68c872e4 100755
+--- a/arch/arm64/boot/dts/freescale/imx8mq-thor96.dts
++++ b/arch/arm64/boot/dts/freescale/imx8mq-thor96.dts
+@@ -184,6 +184,12 @@
+		#reset-cells = <0>;
+	};
+
++        extcon_usb0: extcon_usb0 {
++                compatible = "linux,extcon-usb-gpio-vbus";
++                id-gpio = <&gpio1 10 GPIO_ACTIVE_HIGH>;
++                vbus-gpio = <&gpio1 12 GPIO_ACTIVE_HIGH>;
++        };
++
+	sound-hdmi {
+		compatible = "fsl,imx8mq-evk-cdnhdmi",
+				"fsl,imx-audio-cdnhdmi";
+@@ -542,12 +548,6 @@
+		interrupt-parent = <&gpio3>;
+		interrupts = <3 8>;
+
+-		port {
+-			typec_dr_sw: endpoint {
+-				remote-endpoint = <&usb3_drd_sw>;
+-			};
+-		};
+-
+		usb_con: connector {
+			compatible = "usb-c-connector";
+			label = "USB-C";
+@@ -781,20 +781,11 @@
+ };
+
+ &usb_dwc3_0 {
+-	dr_mode = "otg";
+-	hnp-disable;
+-	srp-disable;
+-	adp-disable;
+-	usb-role-switch;
+-	snps,dis-u1-entry-quirk;
+-	snps,dis-u2-entry-quirk;
+-	status = "okay";
+-
+-	port {
+-		usb3_drd_sw: endpoint {
+-			remote-endpoint = <&typec_dr_sw>;
+-		};
+-	};
++        extcon = <&extcon_usb0>;
++        pinctrl-names = "default";
++        pinctrl-0 = <&pinctrl_usbotg0>;
++        dr_mode = "peripheral";
++        status = "okay";
+ };
+
+ &usb3_phy1 {
+@@ -1221,6 +1212,12 @@
+		>;
+	};
+
++        pinctrl_usbotg0: usbotggrp {
++                fsl,pins = <
++                        MX8MQ_IOMUXC_GPIO1_IO10_GPIO1_IO10              0x17059
++                >;
++        };
++
+	pinctrl_wifi_reset: wifiresetgrp {
+		fsl,pins = <
+			MX8MQ_IOMUXC_UART4_TXD_GPIO5_IO29		0x16
+diff --git a/drivers/extcon/Kconfig b/drivers/extcon/Kconfig
+index aac507bff135..56b3bf0ad10d 100644
+--- a/drivers/extcon/Kconfig
++++ b/drivers/extcon/Kconfig
+@@ -179,6 +179,14 @@ config EXTCON_USB_GPIO
+	  Say Y here to enable GPIO based USB cable detection extcon support.
+	  Used typically if GPIO is used for USB ID pin detection.
+
++config EXTCON_USB_VBUS_GPIO
++	tristate "USB GPIO vbus extcon support"
++	depends on GPIOLIB || COMPILE_TEST
++	help
++	  Say Y here to enable GPIO based USB cable detection and setting
++	  of vbus pin  extcon support.Used typically if GPIO is used for USB
++	  ID pin detection and Vbus pin set.
++
+ config EXTCON_USBC_CROS_EC
+	tristate "ChromeOS Embedded Controller EXTCON support"
+	depends on CROS_EC
+diff --git a/drivers/extcon/Makefile b/drivers/extcon/Makefile
+index 52096fd8a216..2ef9d0f6d8fd 100644
+--- a/drivers/extcon/Makefile
++++ b/drivers/extcon/Makefile
+@@ -24,4 +24,5 @@ obj-$(CONFIG_EXTCON_QCOM_SPMI_MISC) += extcon-qcom-spmi-misc.o
+ obj-$(CONFIG_EXTCON_RT8973A)	+= extcon-rt8973a.o
+ obj-$(CONFIG_EXTCON_SM5502)	+= extcon-sm5502.o
+ obj-$(CONFIG_EXTCON_USB_GPIO)	+= extcon-usb-gpio.o
++obj-$(CONFIG_EXTCON_USB_VBUS_GPIO)   += extcon-usb-gpio-vbus.o
+ obj-$(CONFIG_EXTCON_USBC_CROS_EC) += extcon-usbc-cros-ec.o
+diff --git a/drivers/extcon/extcon-usb-gpio-vbus.c b/drivers/extcon/extcon-usb-gpio-vbus.c
+new file mode 100644
+index 000000000000..4a154f15b717
+--- /dev/null
++++ b/drivers/extcon/extcon-usb-gpio-vbus.c
+@@ -0,0 +1,280 @@
++/**
++ * drivers/extcon/extcon-usb-gpio.c - USB GPIO extcon driver
++ *
++ * Copyright (C) 2015 Texas Instruments Incorporated - http://www.ti.com
++ * Author: Roger Quadros <rogerq@ti.com>
++ *
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License version 2 as
++ * published by the Free Software Foundation.
++ *
++ * This program is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ * GNU General Public License for more details.
++ */
++
++#include <linux/extcon.h>
++#include <linux/gpio.h>
++#include <linux/gpio/consumer.h>
++#include <linux/init.h>
++#include <linux/interrupt.h>
++#include <linux/irq.h>
++#include <linux/kernel.h>
++#include <linux/module.h>
++#include <linux/of_gpio.h>
++#include <linux/platform_device.h>
++#include <linux/slab.h>
++#include <linux/workqueue.h>
++#include <linux/pinctrl/consumer.h>
++
++#define USB_GPIO_DEBOUNCE_MS	20	/* ms */
++
++struct usb_extcon_info {
++	struct device *dev;
++	struct extcon_dev *edev;
++
++	struct gpio_desc *id_gpiod;
++	struct gpio_desc *vbus_gpiod;
++	int id_irq;
++	int vbus_irq;
++
++	unsigned long debounce_jiffies;
++	struct delayed_work wq_detcable;
++};
++
++static const unsigned int usb_extcon_cable[] = {
++	EXTCON_USB,
++	EXTCON_USB_HOST,
++	EXTCON_NONE,
++};
++
++/*
++ * "USB" = VBUS and "USB-HOST" = !ID, so we have:
++ * Both "USB" and "USB-HOST" can't be set as active at the
++ * same time so if "USB-HOST" is active (i.e. ID is 0)  we keep "USB" inactive
++ * even if VBUS is on.
++ *
++ *  State              |    ID   |   VBUS
++ * ----------------------------------------
++ *  [1] USB            |    H    |    H
++ *  [2] none           |    H    |    L
++ *  [3] USB-HOST       |    L    |    H
++ *  [4] USB-HOST       |    L    |    L
++ *
++ * In case we have only one of these signals:
++ * - VBUS only - we want to distinguish between [1] and [2], so ID is always 1.
++ * - ID only - we want to distinguish between [1] and [4], so VBUS = ID.
++*/
++static void usb_extcon_detect_cable_set_vbus(struct work_struct *work)
++{
++	int id, vbus;
++	struct usb_extcon_info *info = container_of(to_delayed_work(work),
++						    struct usb_extcon_info,
++						    wq_detcable);
++
++	/* check ID and VBUS and update cable state */
++	id = info->id_gpiod ?
++		gpiod_get_value_cansleep(info->id_gpiod) : 1;
++	vbus = info->vbus_gpiod ?
++		gpiod_get_value_cansleep(info->vbus_gpiod) : id;
++
++	/* at first we clean states which are no longer active */
++	if (id)
++	{
++		extcon_set_state_sync(info->edev, EXTCON_USB_HOST, false);
++		gpiod_set_value_cansleep(info->vbus_gpiod, 0);
++		printk("id  = %d and vbus = %d \n", gpiod_get_value_cansleep(info->id_gpiod), gpiod_get_value_cansleep(info->vbus_gpiod));
++	}
++	if (!id)
++	{
++		extcon_set_state_sync(info->edev, EXTCON_USB_HOST, true);
++		gpiod_set_value_cansleep(info->vbus_gpiod, 1);
++		printk("id  = %d and vbus = %d \n", gpiod_get_value_cansleep(info->id_gpiod), gpiod_get_value_cansleep(info->vbus_gpiod));
++	}
++}
++
++static irqreturn_t usb_irq_handler(int irq, void *dev_id)
++{
++	struct usb_extcon_info *info = dev_id;
++
++	queue_delayed_work(system_power_efficient_wq, &info->wq_detcable,
++			   info->debounce_jiffies);
++
++	return IRQ_HANDLED;
++}
++
++static int usb_extcon_probe(struct platform_device *pdev)
++{
++	struct device *dev = &pdev->dev;
++	struct device_node *np = dev->of_node;
++	struct usb_extcon_info *info;
++	int ret;
++
++	if (!np)
++		return -EINVAL;
++
++	info = devm_kzalloc(&pdev->dev, sizeof(*info), GFP_KERNEL);
++	if (!info)
++		return -ENOMEM;
++
++	info->dev = dev;
++	info->id_gpiod = devm_gpiod_get_optional(&pdev->dev, "id", GPIOD_IN);
++	info->vbus_gpiod = devm_gpiod_get_optional(&pdev->dev, "vbus",
++						   GPIOD_OUT_LOW);
++
++	if (!info->id_gpiod && !info->vbus_gpiod) {
++		dev_err(dev, "failed to get gpios\n");
++		return -ENODEV;
++	}
++
++	if (IS_ERR(info->id_gpiod))
++		return PTR_ERR(info->id_gpiod);
++
++	if (IS_ERR(info->vbus_gpiod))
++		return PTR_ERR(info->vbus_gpiod);
++
++	info->edev = devm_extcon_dev_allocate(dev, usb_extcon_cable);
++	if (IS_ERR(info->edev)) {
++		dev_err(dev, "failed to allocate extcon device\n");
++		return -ENOMEM;
++	}
++
++	ret = devm_extcon_dev_register(dev, info->edev);
++	if (ret < 0) {
++		dev_err(dev, "failed to register extcon device\n");
++		return ret;
++	}
++
++	if (info->id_gpiod)
++		ret = gpiod_set_debounce(info->id_gpiod,
++					 USB_GPIO_DEBOUNCE_MS * 1000);
++	if (!ret && info->vbus_gpiod)
++		ret = gpiod_set_debounce(info->vbus_gpiod,
++					 USB_GPIO_DEBOUNCE_MS * 1000);
++
++	if (ret < 0)
++		info->debounce_jiffies = msecs_to_jiffies(USB_GPIO_DEBOUNCE_MS);
++
++	INIT_DELAYED_WORK(&info->wq_detcable, usb_extcon_detect_cable_set_vbus);
++
++	if (info->id_gpiod) {
++		info->id_irq = gpiod_to_irq(info->id_gpiod);
++		if (info->id_irq < 0) {
++			dev_err(dev, "failed to get ID IRQ\n");
++			return info->id_irq;
++		}
++
++		ret = devm_request_threaded_irq(dev, info->id_irq, NULL,
++						usb_irq_handler,
++						IRQF_TRIGGER_RISING |
++						IRQF_TRIGGER_FALLING | IRQF_ONESHOT,
++						pdev->name, info);
++		if (ret < 0) {
++			dev_err(dev, "failed to request handler for ID IRQ\n");
++			return ret;
++		}
++	}
++
++	platform_set_drvdata(pdev, info);
++	device_set_wakeup_capable(&pdev->dev, true);
++
++	/* Perform initial detection */
++	usb_extcon_detect_cable_set_vbus(&info->wq_detcable.work);
++
++	return 0;
++}
++
++static int usb_extcon_remove(struct platform_device *pdev)
++{
++	struct usb_extcon_info *info = platform_get_drvdata(pdev);
++
++	cancel_delayed_work_sync(&info->wq_detcable);
++	device_init_wakeup(&pdev->dev, false);
++
++	return 0;
++}
++
++#ifdef CONFIG_PM_SLEEP
++static int usb_extcon_suspend(struct device *dev)
++{
++	struct usb_extcon_info *info = dev_get_drvdata(dev);
++	int ret = 0;
++
++	if (device_may_wakeup(dev)) {
++		if (info->id_gpiod) {
++			ret = enable_irq_wake(info->id_irq);
++			if (ret)
++				return ret;
++		}
++	}
++
++	/*
++	 * We don't want to process any IRQs after this point
++	 * as GPIOs used behind I2C subsystem might not be
++	 * accessible until resume completes. So disable IRQ.
++	 */
++	if (info->id_gpiod)
++		disable_irq(info->id_irq);
++	if (!device_may_wakeup(dev))
++		pinctrl_pm_select_sleep_state(dev);
++
++	return ret;
++}
++
++static int usb_extcon_resume(struct device *dev)
++{
++	struct usb_extcon_info *info = dev_get_drvdata(dev);
++	int ret = 0;
++
++	if (!device_may_wakeup(dev))
++		pinctrl_pm_select_default_state(dev);
++
++	if (device_may_wakeup(dev)) {
++		if (info->id_gpiod) {
++			ret = disable_irq_wake(info->id_irq);
++			if (ret)
++				return ret;
++		}
++	}
++
++	if (info->id_gpiod)
++		enable_irq(info->id_irq);
++	queue_delayed_work(system_power_efficient_wq,
++			   &info->wq_detcable, 0);
++
++	return ret;
++}
++#endif
++
++static SIMPLE_DEV_PM_OPS(usb_extcon_pm_ops,
++			 usb_extcon_suspend, usb_extcon_resume);
++
++static const struct of_device_id usb_extcon_dt_match[] = {
++	{ .compatible = "linux,extcon-usb-gpio-vbus", },
++	{ /* sentinel */ }
++};
++MODULE_DEVICE_TABLE(of, usb_extcon_dt_match);
++
++static const struct platform_device_id usb_extcon_platform_ids[] = {
++	{ .name = "extcon-usb-gpio-vbus", },
++	{ /* sentinel */ }
++};
++MODULE_DEVICE_TABLE(platform, usb_extcon_platform_ids);
++
++static struct platform_driver usb_extcon_driver = {
++	.probe		= usb_extcon_probe,
++	.remove		= usb_extcon_remove,
++	.driver		= {
++		.name	= "extcon-usb-gpio-vbus",
++		.pm	= &usb_extcon_pm_ops,
++		.of_match_table = usb_extcon_dt_match,
++	},
++	.id_table = usb_extcon_platform_ids,
++};
++
++module_platform_driver(usb_extcon_driver);
++
++MODULE_AUTHOR("Roger Quadros <rogerq@ti.com>");
++MODULE_DESCRIPTION("USB GPIO extcon driver");
++MODULE_LICENSE("GPL v2");
+diff --git a/drivers/usb/dwc3/dwc3-of-simple.c b/drivers/usb/dwc3/dwc3-of-simple.c
+index bdac3e7d7b18..293fe9630896 100644
+--- a/drivers/usb/dwc3/dwc3-of-simple.c
++++ b/drivers/usb/dwc3/dwc3-of-simple.c
+@@ -21,6 +21,11 @@
+ #include <linux/of_platform.h>
+ #include <linux/pm_runtime.h>
+ #include <linux/reset.h>
++#include <linux/delay.h>
++#include <linux/gpio.h>
++
++/*reset gpio5_io05 */
++#define IMX8HMI_USB_HUB_RESET_GPIO 133
+
+ struct dwc3_of_simple {
+	struct device		*dev;
+@@ -31,6 +36,34 @@ struct dwc3_of_simple {
+	bool			need_reset;
+ };
+
++static int usb_hub_reset(void)
++{
++	int ret;
++	ret = gpio_request(IMX8HMI_USB_HUB_RESET_GPIO, "usb_hub_reset_gpio");
++	if (ret) {
++		printk(KERN_ERR "%s:%d ei=== gpio request failed with ret=%d",
++			__func__, __LINE__, ret);
++		return ret;
++	}
++
++	ret = gpio_direction_output(IMX8HMI_USB_HUB_RESET_GPIO, 0);
++	if (ret) {
++		printk(KERN_ERR "%s:%d ei=== can't set direction of reset gpio"
++			" with ret=%d", __func__, __LINE__, ret);
++		return ret;
++	}
++
++	usleep_range(10, 1000);
++
++	ret = gpio_direction_output(IMX8HMI_USB_HUB_RESET_GPIO, 1);
++	if (ret) {
++		printk(KERN_ERR "%s:%d ei=== can't set direction of reset gpio"
++			" with ret=%d", __func__, __LINE__, ret);
++		return ret;
++	}
++	return 0;
++}
++
+ static int dwc3_of_simple_probe(struct platform_device *pdev)
+ {
+	struct dwc3_of_simple	*simple;
+@@ -91,6 +124,15 @@ static int dwc3_of_simple_probe(struct platform_device *pdev)
+	if (ret)
+		goto err_clk_put;
+
++	ret = usb_hub_reset();
++	if (ret) {
++		printk(KERN_ERR "%s:%d ei=== usb hub reset failed with ret=%d", __func__, __LINE__, ret);
++	}
++	else{
++		printk(KERN_ERR "%s:%d ei=== usb hub reset passed with ret=%d", __func__, __LINE__, ret);
++	}
++
++
+	pm_runtime_set_active(dev);
+	pm_runtime_enable(dev);
+	pm_runtime_get_sync(dev);
+--
+2.17.1

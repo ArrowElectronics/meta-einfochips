@@ -1,0 +1,96 @@
+From 98caa26f3cf27596e782722fcf3603335c4d86f7 Mon Sep 17 00:00:00 2001
+From: "darshak.patel" <darshak.patel@einfochips.com>
+Date: Wed, 9 Dec 2020 16:02:22 +0530
+Subject: [PATCH 03/18] IMX8 THOR96: Enable support for NOR-SPI Flash:
+ sst,w25q256
+
+---
+ .../boot/dts/freescale/imx8mq-thor96.dts      | 11 ++++----
+ drivers/mtd/spi-nor/spi-nor.c                 | 26 ++++++++++++++++++-
+ 2 files changed, 30 insertions(+), 7 deletions(-)
+
+diff --git a/arch/arm64/boot/dts/freescale/imx8mq-thor96.dts b/arch/arm64/boot/dts/freescale/imx8mq-thor96.dts
+index dab95abeaac7..a967c16bdae9 100755
+--- a/arch/arm64/boot/dts/freescale/imx8mq-thor96.dts
++++ b/arch/arm64/boot/dts/freescale/imx8mq-thor96.dts
+@@ -715,15 +715,14 @@
+	pinctrl-0 = <&pinctrl_qspi>;
+	status = "okay";
+
+-	flash0: n25q256a@0 {
++	flash0: w25q256@0 {
+		reg = <0>;
+		#address-cells = <1>;
+		#size-cells = <1>;
+-		compatible = "jedec,spi-nor";
+-		spi-max-frequency = <29000000>;
+-		spi-tx-bus-width = <4>;
+-		spi-rx-bus-width = <4>;
+-		spi-nor,ddr-quad-read-dummy = <6>;
++		compatible = "sst,w25q256";
++		spi-max-frequency = <100000000>;
++		spi-nor,ddr-quad-read-dummy = <4>;
++		status = "okay";
+	};
+ };
+
+diff --git a/drivers/mtd/spi-nor/spi-nor.c b/drivers/mtd/spi-nor/spi-nor.c
+index 12094f249979..14f52a9486bb 100644
+--- a/drivers/mtd/spi-nor/spi-nor.c
++++ b/drivers/mtd/spi-nor/spi-nor.c
+@@ -22,6 +22,7 @@
+ #include <linux/sched/task_stack.h>
+ #include <linux/spi/flash.h>
+ #include <linux/mtd/spi-nor.h>
++#include <linux/gpio.h>
+
+ /* Define max times to check status register before we give up. */
+
+@@ -40,6 +41,10 @@
+ #define SPI_NOR_MAX_ID_LEN	6
+ #define SPI_NOR_MAX_ADDR_WIDTH	4
+
++#define OUT                                                    0
++#define IMX8THOR_NOR_CS_SW_GPIO                               64
++
++
+ struct sfdp_parameter_header {
+	u8		id_lsb;
+	u8		minor;
+@@ -2480,7 +2485,7 @@ static const struct flash_info spi_nor_ids[] = {
+	{ "w25q80", INFO(0xef5014, 0, 64 * 1024,  16, SECT_4K) },
+	{ "w25q80bl", INFO(0xef4014, 0, 64 * 1024,  16, SECT_4K) },
+	{ "w25q128", INFO(0xef4018, 0, 64 * 1024, 256, SECT_4K) },
+-	{ "w25q256", INFO(0xef4019, 0, 64 * 1024, 512, SECT_4K | SPI_NOR_DUAL_READ | SPI_NOR_QUAD_READ) },
++	{ "w25q256", INFO(0xef6019, 0, 64 * 1024, 512, SECT_4K | SPI_NOR_DUAL_READ | SPI_NOR_QUAD_READ) },
+	{ "w25q256jvm", INFO(0xef7019, 0, 64 * 1024, 512,
+			     SECT_4K | SPI_NOR_DUAL_READ | SPI_NOR_QUAD_READ) },
+	{ "w25m512jv", INFO(0xef7119, 0, 64 * 1024, 1024,
+@@ -4834,6 +4839,25 @@ int spi_nor_scan(struct spi_nor *nor, const char *name,
+	int ret;
+	int i;
+
++	printk("nor cs gpio val %d \n",IMX8THOR_NOR_CS_SW_GPIO);
++	if (!gpio_is_valid(IMX8THOR_NOR_CS_SW_GPIO)) {
++	        printk("invalid nor cs gpio, cannot switch mipi sw\n");
++	        return -ENODEV;
++	}
++
++	ret = gpio_request(IMX8THOR_NOR_CS_SW_GPIO, "nor_cs");
++	if (ret < 0) {
++	        printk("request nor cs failed, cannot nor cs sw: %d\n",ret);
++	        return ret;
++	}
++
++	gpio_direction_output(IMX8THOR_NOR_CS_SW_GPIO, OUT);
++	gpio_set_value(IMX8THOR_NOR_CS_SW_GPIO, 0);
++
++	printk("nor cs gpio low, nor cs sw\n");
++	printk("spi nor name %s\n",name);
++	printk("%s %d\n",__func__,__LINE__);
++
+	ret = spi_nor_check(nor);
+	if (ret)
+		return ret;
+--
+2.17.1

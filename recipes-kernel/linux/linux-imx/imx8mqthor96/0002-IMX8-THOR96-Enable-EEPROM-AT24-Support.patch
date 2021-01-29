@@ -1,0 +1,35 @@
+From bc6c4978372aa455b0753ee601e3207dea26b5ef Mon Sep 17 00:00:00 2001
+From: "darshak.patel" <darshak.patel@einfochips.com>
+Date: Wed, 9 Dec 2020 15:38:21 +0530
+Subject: [PATCH 02/18] IMX8 THOR96: Enable EEPROM AT24 Support
+
+Command for testing :
+For Write
+$ echo hello > /sys/bus/i2c/devices/i2c-1/1-0050/eeprom
+
+For read
+$ cat /sys/bus/i2c/devices/i2c-1/1-0050/eeprom | hexdump -C
+---
+ arch/arm64/boot/dts/freescale/imx8mq-thor96.dts | 7 +++++++
+ 1 file changed, 7 insertions(+)
+
+diff --git a/arch/arm64/boot/dts/freescale/imx8mq-thor96.dts b/arch/arm64/boot/dts/freescale/imx8mq-thor96.dts
+index 07bfd942cb71..dab95abeaac7 100755
+--- a/arch/arm64/boot/dts/freescale/imx8mq-thor96.dts
++++ b/arch/arm64/boot/dts/freescale/imx8mq-thor96.dts
+@@ -630,6 +630,13 @@
+	pinctrl-0 = <&pinctrl_i2c2>;
+	status = "okay";
+
++	eeprom: eeprom@50 {
++		compatible = "atmel,24c256";
++		reg = <0x50>;
++		pagesize = <32>;
++		status = "okay";
++	};
++
+	ov5640_mipi: ov5640_mipi@3c {
+		compatible = "ovti,ov5640_mipi";
+		reg = <0x3c>;
+--
+2.17.1

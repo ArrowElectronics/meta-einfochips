@@ -1,0 +1,125 @@
+From 6d2cdd704b38e268bc2fb8b4b0cc94e2298acc3b Mon Sep 17 00:00:00 2001
+From: "darshak.patel" <darshak.patel@einfochips.com>
+Date: Thu, 10 Dec 2020 17:04:10 +0530
+Subject: [PATCH 12/18] IMX8 THOR96: Resolved SD card timeout issue
+
+- Changed pading config of CLK gpio for signal integrity issues
+---
+ .../boot/dts/freescale/imx8mq-thor96.dts      | 50 ++++++++++---------
+ 1 file changed, 26 insertions(+), 24 deletions(-)
+
+diff --git a/arch/arm64/boot/dts/freescale/imx8mq-thor96.dts b/arch/arm64/boot/dts/freescale/imx8mq-thor96.dts
+index aad79c087f9b..2795f4a16451 100755
+--- a/arch/arm64/boot/dts/freescale/imx8mq-thor96.dts
++++ b/arch/arm64/boot/dts/freescale/imx8mq-thor96.dts
+@@ -98,8 +98,6 @@
+	};
+
+	reg_usdhc2_vmmc: regulator-vsd-3v3 {
+-		pinctrl-names = "default";
+-		pinctrl-0 = <&pinctrl_reg_usdhc2>;
+		compatible = "regulator-fixed";
+		regulator-name = "VSD_3V3";
+		regulator-min-microvolt = <3300000>;
+@@ -235,6 +233,7 @@
+		audio-cpu = <&sai1>;
+		audio-codec = <&ak4458_1>, <&ak4458_2>;
+		ak4458,pdn-gpio = <&gpio3 18 GPIO_ACTIVE_HIGH>;
++		status = "disabled";
+	};
+
+	sound-ak5558 {
+@@ -242,6 +241,7 @@
+		model = "ak5558-audio";
+		audio-cpu = <&sai5>;
+		audio-codec = <&ak5558>;
++		status = "disabled";
+	};
+
+	sound-ak4497 {
+@@ -841,14 +841,15 @@
+	non-removable;
+	no-sd;
+	no-sdio;
+-	status = "okay";
++	status = "disabled";
+ };
+
+ &usdhc2 {
+	pinctrl-names = "default", "state_100mhz", "state_200mhz";
+-	pinctrl-0 = <&pinctrl_usdhc2>;
+-	pinctrl-1 = <&pinctrl_usdhc2_100mhz>;
+-	pinctrl-2 = <&pinctrl_usdhc2_200mhz>;
++	pinctrl-0 = <&pinctrl_usdhc2>, <&pinctrl_usdhc2_gpio>;
++	pinctrl-1 = <&pinctrl_usdhc2_100mhz>, <&pinctrl_usdhc2_gpio>;
++	pinctrl-2 = <&pinctrl_usdhc2_200mhz>, <&pinctrl_usdhc2_gpio>;
++	bus-width = <4>;
+	cd-gpios = <&gpio2 12 GPIO_ACTIVE_LOW>;
+	vmmc-supply = <&reg_usdhc2_vmmc>;
+	status = "okay";
+@@ -1016,12 +1017,6 @@
+		>;
+	};
+
+-	pinctrl_reg_usdhc2: regusdhc2grpgpio {
+-		fsl,pins = <
+-			MX8MQ_IOMUXC_SD2_RESET_B_GPIO2_IO19		0x41
+-		>;
+-	};
+-
+	pinctrl_sai1: sai1grp {
+		fsl,pins = <
+			MX8MQ_IOMUXC_SAI1_MCLK_SAI1_MCLK                0xd6
+@@ -1198,6 +1193,13 @@
+		>;
+	};
+
++	pinctrl_usdhc2_gpio: usdhc2grpgpio {
++            fsl,pins = <
++                MX8MQ_IOMUXC_SD2_CD_B_GPIO2_IO12                        0x41
++                MX8MQ_IOMUXC_SD2_RESET_B_GPIO2_IO19                     0x41
++            >;
++	};
++
+	pinctrl_usdhc2: usdhc2grp {
+		fsl,pins = <
+			MX8MQ_IOMUXC_SD2_CLK_USDHC2_CLK			0x83
+@@ -1212,24 +1214,24 @@
+
+	pinctrl_usdhc2_100mhz: usdhc2-100grp {
+		fsl,pins = <
+-			MX8MQ_IOMUXC_SD2_CLK_USDHC2_CLK			0x85
+-			MX8MQ_IOMUXC_SD2_CMD_USDHC2_CMD			0xc5
+-			MX8MQ_IOMUXC_SD2_DATA0_USDHC2_DATA0		0xc5
+-			MX8MQ_IOMUXC_SD2_DATA1_USDHC2_DATA1		0xc5
+-			MX8MQ_IOMUXC_SD2_DATA2_USDHC2_DATA2		0xc5
+-			MX8MQ_IOMUXC_SD2_DATA3_USDHC2_DATA3		0xc5
++			MX8MQ_IOMUXC_SD2_CLK_USDHC2_CLK			0x8d
++			MX8MQ_IOMUXC_SD2_CMD_USDHC2_CMD			0xcd
++			MX8MQ_IOMUXC_SD2_DATA0_USDHC2_DATA0		0xcd
++			MX8MQ_IOMUXC_SD2_DATA1_USDHC2_DATA1		0xcd
++			MX8MQ_IOMUXC_SD2_DATA2_USDHC2_DATA2		0xcd
++			MX8MQ_IOMUXC_SD2_DATA3_USDHC2_DATA3		0xcd
+			MX8MQ_IOMUXC_GPIO1_IO04_USDHC2_VSELECT		0xc1
+		>;
+	};
+
+	pinctrl_usdhc2_200mhz: usdhc2-200grp {
+		fsl,pins = <
+-			MX8MQ_IOMUXC_SD2_CLK_USDHC2_CLK			0x87
+-			MX8MQ_IOMUXC_SD2_CMD_USDHC2_CMD			0xc7
+-			MX8MQ_IOMUXC_SD2_DATA0_USDHC2_DATA0		0xc7
+-			MX8MQ_IOMUXC_SD2_DATA1_USDHC2_DATA1		0xc7
+-			MX8MQ_IOMUXC_SD2_DATA2_USDHC2_DATA2		0xc7
+-			MX8MQ_IOMUXC_SD2_DATA3_USDHC2_DATA3		0xc7
++			MX8MQ_IOMUXC_SD2_CLK_USDHC2_CLK			0x9f
++			MX8MQ_IOMUXC_SD2_CMD_USDHC2_CMD			0xdf
++			MX8MQ_IOMUXC_SD2_DATA0_USDHC2_DATA0		0xdf
++			MX8MQ_IOMUXC_SD2_DATA1_USDHC2_DATA1		0xdf
++			MX8MQ_IOMUXC_SD2_DATA2_USDHC2_DATA2		0xdf
++			MX8MQ_IOMUXC_SD2_DATA3_USDHC2_DATA3		0xdf
+			MX8MQ_IOMUXC_GPIO1_IO04_USDHC2_VSELECT		0xc1
+		>;
+	};
+--
+2.17.1

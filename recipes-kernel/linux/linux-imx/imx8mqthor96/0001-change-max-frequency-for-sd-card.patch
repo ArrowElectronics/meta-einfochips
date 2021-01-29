@@ -1,0 +1,23 @@
+From e2f773cee8e33a20b5343553a0a712283b52ee9c Mon Sep 17 00:00:00 2001
+From: "darshak.patel" <darshak.patel@einfochips.com>
+Date: Thu, 24 Dec 2020 11:48:16 +0530
+Subject: [PATCH] change max frequency for sd card
+
+---
+ arch/arm64/boot/dts/freescale/imx8mq-thor96.dts | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/arch/arm64/boot/dts/freescale/imx8mq-thor96.dts b/arch/arm64/boot/dts/freescale/imx8mq-thor96.dts
+index 3cd01c1dfc8f..dd2d992f97be 100755
+--- a/arch/arm64/boot/dts/freescale/imx8mq-thor96.dts
++++ b/arch/arm64/boot/dts/freescale/imx8mq-thor96.dts
+@@ -923,6 +923,7 @@
+	bus-width = <4>;
+	cd-gpios = <&gpio2 12 GPIO_ACTIVE_LOW>;
+	vmmc-supply = <&reg_usdhc2_vmmc>;
++        max-frequency = <180000000>;
+	status = "okay";
+ };
+
+--
+2.17.1

@@ -1,0 +1,141 @@
+From b3bf49264011ab3d0ae2cd6a975dcd9fe438d630 Mon Sep 17 00:00:00 2001
+From: "darshak.patel" <darshak.patel@einfochips.com>
+Date: Wed, 9 Dec 2020 19:51:06 +0530
+Subject: [PATCH 08/18] IMX8 THOR96: Enabled DSI to HDMI (ADV7533 bridge chip)
+
+---
+ .../boot/dts/freescale/imx8mq-thor96.dts      | 24 ++++++++--------
+ drivers/gpu/drm/bridge/adv7511/adv7511_drv.c  | 28 ++++++++++++++++---
+ 2 files changed, 35 insertions(+), 17 deletions(-)
+
+diff --git a/arch/arm64/boot/dts/freescale/imx8mq-thor96.dts b/arch/arm64/boot/dts/freescale/imx8mq-thor96.dts
+index 9f1ff6419ede..50953ea0e872 100755
+--- a/arch/arm64/boot/dts/freescale/imx8mq-thor96.dts
++++ b/arch/arm64/boot/dts/freescale/imx8mq-thor96.dts
+@@ -206,7 +206,7 @@
+		model = "imx-spdif";
+		spdif-controller = <&spdif1>;
+		spdif-out;
+-		spdif-in;
++		status = "okay";
+	};
+
+         sound-adau1361 {
+@@ -221,6 +221,7 @@
+		model = "imx-hdmi-arc";
+		spdif-controller = <&spdif2>;
+		spdif-in;
++		status = "okay";
+	};
+
+	sound-ak4458 {
+@@ -525,6 +526,14 @@
+		};
+	};
+
++        adv_bridge: adv7535@3d {
++                compatible = "adi,adv7533";
++                reg = <0x3d>;
++                adi,addr-cec = <0x3b>;
++                adi,dsi-lanes = <4>;
++                status = "okay";
++        };
++
+	ptn5110: tcpc@50 {
+		compatible = "nxp,ptn5110";
+		pinctrl-names = "default";
+@@ -629,17 +638,6 @@
+		ak4497,pdn-gpio = <&gpio3 16 GPIO_ACTIVE_HIGH>;
+	};
+
+-	adv_bridge: adv7535@3d {
+-		compatible = "adi,adv7535";
+-		reg = <0x3d>;
+-		adi,addr-cec = <0x3b>;
+-		adi,dsi-lanes = <4>;
+-		pinctrl-0 = <&pinctrl_i2c1_dsi_ts_int>;
+-		interrupt-parent = <&gpio5>;
+-		interrupts = <7 IRQ_TYPE_LEVEL_LOW>;
+-
+-		status = "disabled";
+-	};
+ };
+
+ &i2c2 {
+@@ -1097,7 +1095,7 @@
+	pinctrl_spdif1: spdif1grp {
+		fsl,pins = <
+			MX8MQ_IOMUXC_SPDIF_TX_SPDIF1_OUT	0xd6
+-			MX8MQ_IOMUXC_SPDIF_RX_SPDIF1_IN		0xd6
++			MX8MQ_IOMUXC_SPDIF_RX_SPDIF1_IN         0xd6 /*USED IN ZIGBEE*/
+		>;
+	};
+
+diff --git a/drivers/gpu/drm/bridge/adv7511/adv7511_drv.c b/drivers/gpu/drm/bridge/adv7511/adv7511_drv.c
+index 1877668be1e6..2b4b65b817a1 100644
+--- a/drivers/gpu/drm/bridge/adv7511/adv7511_drv.c
++++ b/drivers/gpu/drm/bridge/adv7511/adv7511_drv.c
+@@ -42,15 +42,15 @@ static const struct reg_sequence adv7511_fixed_registers[] = {
+  */
+
+ static const uint8_t adv7511_register_defaults[] = {
+-	0x12, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, /* 00 */
+-	0x00, 0x00, 0x01, 0x0e, 0xbc, 0x18, 0x01, 0x13,
++	0x12, 0x00, 0x18, 0x00, 0x00, 0x00, 0x00, 0x00, /* 00 */
++	0x00, 0x00, 0x51, 0x8e, 0xb8, 0x18, 0x01, 0x13,
+	0x25, 0x37, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, /* 10 */
+	0x46, 0x62, 0x04, 0xa8, 0x00, 0x00, 0x1c, 0x84,
+	0x1c, 0xbf, 0x04, 0xa8, 0x1e, 0x70, 0x02, 0x1e, /* 20 */
+	0x00, 0x00, 0x04, 0xa8, 0x08, 0x12, 0x1b, 0xac,
+	0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, /* 30 */
+	0x00, 0x00, 0x00, 0x80, 0x00, 0x00, 0x00, 0xb0,
+-	0x00, 0x50, 0x90, 0x7e, 0x79, 0x70, 0x00, 0x00, /* 40 */
++	0x00, 0x50, 0x90, 0x7e, 0xff, 0x70, 0x00, 0x00, /* 40 */
+	0x00, 0xa8, 0x80, 0x00, 0x00, 0x00, 0x00, 0x00,
+	0x00, 0x00, 0x02, 0x0d, 0x00, 0x00, 0x00, 0x00, /* 50 */
+	0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+@@ -68,7 +68,7 @@ static const uint8_t adv7511_register_defaults[] = {
+	0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+	0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, /* c0 */
+	0x00, 0x03, 0x00, 0x00, 0x02, 0x00, 0x01, 0x04,
+-	0x30, 0xff, 0x80, 0x80, 0x80, 0x00, 0x00, 0x00, /* d0 */
++	0x30, 0xff, 0x80, 0x80, 0x80, 0x00, 0x48, 0x00, /* d0 */
+	0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x10, 0x01,
+	0x80, 0x75, 0x00, 0x00, 0x60, 0x00, 0x00, 0x00, /* e0 */
+	0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+@@ -695,6 +695,16 @@ adv7511_detect(struct adv7511 *adv7511, struct drm_connector *connector)
+				   ADV7511_REG_POWER2_HPD_SRC_BOTH);
+	}
+
++        regmap_write(adv7511->regmap, 0xD6, 0x48);
++        regmap_write(adv7511->regmap, 0x01,0x00);
++        regmap_write(adv7511->regmap, 0x02,0x18);
++        regmap_write(adv7511->regmap, 0x03,0x00);
++        regmap_write(adv7511->regmap, 0x0A,0x51);
++        regmap_write(adv7511->regmap, 0x0B,0x8E);
++        regmap_write(adv7511->regmap, 0x0C,0xB8);
++        regmap_write(adv7511->regmap, 0x44,0xFF);
++        regmap_write(adv7511->regmap_cec, 0x05,0xc8);
++
+	adv7511->status = status;
+	return status;
+ }
+@@ -1292,6 +1302,16 @@ static int adv7511_probe(struct i2c_client *i2c, const struct i2c_device_id *id)
+	drm_bridge_add(&adv7511->bridge);
+
+	adv7511_audio_init(dev, adv7511);
++
++        regmap_write(adv7511->regmap, 0x01,0x00);
++        regmap_write(adv7511->regmap, 0x02,0x18);
++        regmap_write(adv7511->regmap, 0x03,0x00);
++        regmap_write(adv7511->regmap, 0x0A,0x51);
++        regmap_write(adv7511->regmap, 0x0B,0x8E);
++        regmap_write(adv7511->regmap, 0x0C,0xB8);
++        regmap_write(adv7511->regmap, 0x44,0xFF);
++        regmap_write(adv7511->regmap_cec, 0x05,0xc8);
++
+	return 0;
+
+ err_unregister_cec:
+--
+2.17.1

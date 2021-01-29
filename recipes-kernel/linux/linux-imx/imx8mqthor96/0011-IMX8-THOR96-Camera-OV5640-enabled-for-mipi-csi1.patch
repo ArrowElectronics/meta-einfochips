@@ -1,0 +1,95 @@
+From 552b399783be561f690363f4ef840c1df838d747 Mon Sep 17 00:00:00 2001
+From: "darshak.patel" <darshak.patel@einfochips.com>
+Date: Thu, 10 Dec 2020 16:19:01 +0530
+Subject: [PATCH 11/18] IMX8 THOR96: Camera OV5640 enabled for mipi csi1
+
+---
+ .../boot/dts/freescale/imx8mq-thor96.dts      | 32 +++++++++----------
+ 1 file changed, 16 insertions(+), 16 deletions(-)
+
+diff --git a/arch/arm64/boot/dts/freescale/imx8mq-thor96.dts b/arch/arm64/boot/dts/freescale/imx8mq-thor96.dts
+index f678a16ac3fb..aad79c087f9b 100755
+--- a/arch/arm64/boot/dts/freescale/imx8mq-thor96.dts
++++ b/arch/arm64/boot/dts/freescale/imx8mq-thor96.dts
+@@ -575,10 +575,10 @@
+ };
+
+ &i2c3 {
+-	clock-frequency = <384000>;
++	clock-frequency = <100000>;
+	pinctrl-names = "default";
+	pinctrl-0 = <&pinctrl_i2c3>;
+-	status = "disabled";
++	status = "okay";
+
+         ov5640_mipi: ov5640_mipi@3c {
+             compatible = "ovti,ov5640_mipi";
+@@ -640,7 +640,7 @@
+ };
+
+ &i2c2 {
+-	clock-frequency = <384000>;
++	clock-frequency = <100000>;
+	pinctrl-names = "default";
+	pinctrl-0 = <&pinctrl_i2c2>;
+	status = "okay";
+@@ -657,13 +657,6 @@
+		reg = <0x38>;
+		status = "okay";
+	};
+-};
+-
+-&i2c4 {
+-	clock-frequency = <100000>;
+-	pinctrl-names = "default";
+-	pinctrl-0 = <&pinctrl_i2c4>;
+-	status = "okay";
+
+	ov5640_mipi2: ov5640_mipi@3c {
+		compatible = "ovti,ov5640_mipi";
+@@ -671,15 +664,15 @@
+		status = "okay";
+		pinctrl-names = "default";
+		pinctrl-0 = <&pinctrl_csi2_pwn>;
+-		clocks = <&clk IMX8MQ_CLK_CLKO2>;
++		clocks = <&clk IMX8MQ_CLK_CLKO1>;
+		clock-names = "csi_mclk";
+-		assigned-clocks = <&clk IMX8MQ_CLK_CLKO2>;
++		assigned-clocks = <&clk IMX8MQ_CLK_CLKO1>;
+		assigned-clock-parents = <&clk IMX8MQ_SYS2_PLL_200M>;
+-		assigned-clock-rates = <0>, <20000000>;
+-		csi_id = <0>;
++		assigned-clock-rates = <0>, <25000000>;
++		csi_id = <1>;
+		pwn-gpios = <&gpio1 5 GPIO_ACTIVE_HIGH>;
+		rst-gpios = <&gpio3 13 GPIO_ACTIVE_LOW>;
+-		mclk = <20000000>;
++		mclk = <25000000>;
+		mclk_source = <0>;
+
+		port {
+@@ -690,6 +683,13 @@
+	};
+ };
+
++&i2c4 {
++        clock-frequency = <100000>;
++        pinctrl-names = "default";
++        pinctrl-0 = <&pinctrl_i2c4>;
++        status = "okay";
++};
++
+ &pcie0 {
+	pinctrl-names = "default";
+	pinctrl-0 = <&pinctrl_pcie0>;
+@@ -1287,7 +1287,7 @@
+ };
+
+ &ov5640_mipi {
+-     status = "disabled";
++     status = "okay";
+ };
+
+ &ov5640_mipi2 {
+--
+2.17.1
