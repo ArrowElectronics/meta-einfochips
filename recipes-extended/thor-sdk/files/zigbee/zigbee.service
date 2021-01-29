@@ -1,0 +1,16 @@
+[Unit]
+Description=Zigbee Gateway Host application with MQTT support
+ConditionPathExists=/home/root/zigbee/Z3GatewayHost_HMI
+After=mosquitto.service
+
+[Service]
+Type=simple
+ExecStartPre=/bin/rm -f /var/run/Z3GatewayHost_HMI.pid
+ExecStart=/home/root/zigbee/Z3GatewayHost_HMI
+ExecReload=/bin/kill -HUP $MAINPID
+PIDFile=/var/run/Z3GatewayHost_HMI.pid
+Restart=on-failure
+RestartSec=30
+
+[Install]
+WantedBy=multi-user.target

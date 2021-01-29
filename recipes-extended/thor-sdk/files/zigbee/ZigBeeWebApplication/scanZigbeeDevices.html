@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html>
+<body bgcolor="#E6E6FA">
+<head>
+  <script src="bootstrap-js/jquery.min.js"></script>
+  <script src="js/require.js"></script>
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+  <link rel="stylesheet" type="text/css" href="css/scaningZigbeeDevice.css">
+</head>
+<body>
+<html>
+<div class="title">
+    <h1>Industrial Automation</h1>
+  </div>
+<div id="loader" class = spinloader>
+</div>
+</html>
+<div class="tablebar">
+<table id="table">
+  <tr>
+      <thead>
+    <th width="5%">Select</th>
+    <th width="20%">Device Name</th>
+    <th width="25%">Device ID</th>
+    <th width="25%">Device Type</th>
+    <th width="25%">Device NodeID</th>
+      </thead>
+  </tr>
+</table>
+</div>
+<div class= "tablerow" id ="tablerow">
+  <label>No Scanning Zigbee Device found</label>
+</div>
+  <div id="btn-group-toggle" class="btn-group">
+      <button type="button" class="scanbutton" id ="scanbutton" onclick="scaningZigbeeDevices()" >SCAN</button>
+      <button type="button" class="pairbutton" id = "pairbutton">PAIR</button>
+      <button type="button" class="deletebutton" id = "deletebutton" onclick="deleteRowFromScaningTable()" >DELETE</button>
+      <button type="button" class="helpbutton" id = "helpbutton" onclick="helpInstruction()" >HELP</button>
+  </div>
+  <div class= "label" id ="label">
+    <label>Scanning Zigbee Devices   </label>
+  </div>
+  <div id="myModal" class="modal">
+    <!-- Modal content -->
+    <div class="modal-content">
+      <span class="close">&times;</span>
+      <p>Invalid Pairing Device Type</p>
+    </div>
+  </div>
+
+  <div id="myModal_2" class="modal_2">
+    <!-- Modal content -->
+    <div class="modal_2-content">
+      <span class="close_2">&times;</span>
+      <center>
+      <!-- <h4 class="modal-title">Help Instruction</h4> -->
+      <header class="header">
+          <h2>Help Instruction</h2>
+      </header>
+
+      <center>
+      <h1>Zigbee Device Table:</h1>
+      <p>
+          In this table, we will show the information about ZigBee devices like device name, device type, device EUI64, device node id etc.
+
+          Now click on Scan Button. So it will scan nearby ZigBee devices for almost 2 and half minutes.
+         </p>
+
+    </div>
+</body>
+<script type = "text/javascript" src = "js/pairingZigbeeDevice.js"></script>
+<script type = "text/javascript" src = "js/scanZigbeeDevice.js"></script>
+<script>
+  $(document).ready(function () {
+
+    buttonDisabled()
+    var chk;
+    var tr;
+    var selectedData =[];
+
+    $(".pairbutton").click( function() {
+    $('table [type="checkbox"]').each(function(i, chk) {
+    if (chk.checked) {
+
+      console.log("Checked!", i, chk);
+      createPairingDevicesList();
+      location.href='paringZigbeeDevices.html';
+
+    }
+
+     });
+
+     });
+  });
+
+
+
+</script>
+</body>
+</html>
