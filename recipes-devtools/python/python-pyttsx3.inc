@@ -1,0 +1,13 @@
+SUMMARY = "Python3 Face Recognition Using dlib - models"
+HOMEPAGE = ""
+LICENSE = "CLOSED"
+#LIC_FILES_CHKSUM = "file://LICENSE;md5=c011883ac26229b8ba3084f55c7664c6"
+
+SRC_URI[md5sum] = "edc3a70db52a902bdfd72f875a6a7237"
+SRC_URI[sha256sum] = "c3d67b54f10252b4254869c85280f48d7b914304fb726d0b41b170f2da3bf0f6"
+
+DEPENDS = "espeak"
+
+CLEANBROKEN = "1"
+
+PYPI_PACKAGE = "pyttsx3"
