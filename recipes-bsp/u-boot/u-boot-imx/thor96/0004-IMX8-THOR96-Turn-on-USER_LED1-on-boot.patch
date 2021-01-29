@@ -1,0 +1,70 @@
+From 0ef5a60816c223d4c1c21f3ac7cd9a29a5d08dae Mon Sep 17 00:00:00 2001
+From: "darshak.patel" <darshak.patel@einfochips.com>
+Date: Fri, 18 Dec 2020 12:03:52 +0530
+Subject: [PATCH 4/5] IMX8 THOR96: Turn on USER_LED1 on boot
+
+---
+ board/freescale/imx8mq_thor96/imx8mq_thor96.c | 34 +++++++++++++++++++
+ 1 file changed, 34 insertions(+)
+
+diff --git a/board/freescale/imx8mq_thor96/imx8mq_thor96.c b/board/freescale/imx8mq_thor96/imx8mq_thor96.c
+index 28a27dfff6..6ffef1daca 100644
+--- a/board/freescale/imx8mq_thor96/imx8mq_thor96.c
++++ b/board/freescale/imx8mq_thor96/imx8mq_thor96.c
+@@ -18,6 +18,7 @@
+ #include <asm/arch/imx8mq_pins.h>
+ #include <asm/arch/sys_proto.h>
+ #include <asm/mach-imx/gpio.h>
++#include <asm/gpio.h>
+ #include <asm/mach-imx/mxc_i2c.h>
+ #include <asm/arch/clock.h>
+ #include <spl.h>
+@@ -203,6 +204,38 @@ static int setup_typec(void)
+ }
+ #endif
+
++struct gpio_desc user_led_desc;
++
++static iomux_v3_cfg_t user_leds[] = {
++       IMX8MQ_PAD_SAI2_RXFS__GPIO4_IO21 | MUX_PAD_CTRL(NO_PAD_CTRL),
++};
++
++static void user_leds_init(void)
++{
++        int ret;
++
++       printf("%s ******* ENTER *****\n", __func__);
++
++        imx_iomux_v3_setup_multiple_pads(user_leds, ARRAY_SIZE(user_leds));
++
++        ret = dm_gpio_lookup_name("GPIO4_21", &user_led_desc);
++        if (ret) {
++                printf("%s lookup GPIO4_21 failed ret = %d\n", __func__, ret);
++                return -ENODEV;
++        }
++
++        ret = dm_gpio_request(&user_led_desc, "User Led1");
++        if (ret) {
++                printf("%s request typec_sel failed ret = %d\n", __func__, ret);
++                return -ENODEV;
++        }
++
++        dm_gpio_set_dir_flags(&user_led_desc, GPIOD_IS_OUT);
++
++       dm_gpio_set_value(&user_led_desc, 1);
++
++}
++
+ #if defined(CONFIG_USB_DWC3) || defined(CONFIG_USB_XHCI_IMX8M)
+ int board_usb_init(int index, enum usb_init_type init)
+ {
+@@ -258,6 +291,7 @@ int board_init(void)
+ #ifdef CONFIG_USB_TCPC
+	setup_typec();
+ #endif
++	user_leds_init();
+	return 0;
+ }
+
+--
+2.17.1

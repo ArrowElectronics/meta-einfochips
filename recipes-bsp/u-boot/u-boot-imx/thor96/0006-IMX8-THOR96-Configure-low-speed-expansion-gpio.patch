@@ -1,0 +1,56 @@
+From 1499bdf2f775dd5777d14d729cd1bba2a8aec178 Mon Sep 17 00:00:00 2001
+From: "darshak.patel" <darshak.patel@einfochips.com>
+Date: Thu, 24 Dec 2020 15:35:09 +0530
+Subject: [PATCH] IMX8 THOR96: Configure low speed expansion gpio
+
+---
+ board/freescale/imx8mq_thor96/imx8mq_thor96.c | 27 +++++++++++++++++++
+ 1 file changed, 27 insertions(+)
+
+diff --git a/board/freescale/imx8mq_thor96/imx8mq_thor96.c b/board/freescale/imx8mq_thor96/imx8mq_thor96.c
+index fcb7cc39ca..77699c02b5 100644
+--- a/board/freescale/imx8mq_thor96/imx8mq_thor96.c
++++ b/board/freescale/imx8mq_thor96/imx8mq_thor96.c
+@@ -268,6 +268,32 @@ static void zigbee_reset_init(void)
+
+ }
+
++static iomux_v3_cfg_t const gpio_exp[] = {
++    IMX8MQ_PAD_SD1_DATA4__GPIO2_IO6 | MUX_PAD_CTRL(NO_PAD_CTRL),
++    IMX8MQ_PAD_SD1_DATA5__GPIO2_IO7 | MUX_PAD_CTRL(NO_PAD_CTRL),
++    IMX8MQ_PAD_SD1_DATA6__GPIO2_IO8 | MUX_PAD_CTRL(NO_PAD_CTRL),
++    IMX8MQ_PAD_SD1_DATA7__GPIO2_IO9 | MUX_PAD_CTRL(NO_PAD_CTRL),
++};
++
++static void gpio_exp_set_init(void)
++{
++       printf("gpio_exp_set_init start\n");
++       imx_iomux_v3_setup_multiple_pads(gpio_exp,ARRAY_SIZE(gpio_exp));
++       gpio_request(IMX_GPIO_NR(2, 06), "gpio_exp2_6");
++       gpio_request(IMX_GPIO_NR(2, 07), "gpio_exp2_7");
++       gpio_request(IMX_GPIO_NR(2, 8), "gpio_exp2_8");
++       gpio_request(IMX_GPIO_NR(2, 9), "gpio_exp2_9");
++       gpio_direction_output(IMX_GPIO_NR(2, 06), 1);
++       gpio_direction_output(IMX_GPIO_NR(2, 07), 1);
++       gpio_direction_output(IMX_GPIO_NR(2, 8), 1);
++       gpio_direction_output(IMX_GPIO_NR(2, 9), 1);
++       gpio_direction_output(IMX_GPIO_NR(2, 06), 0);
++       gpio_direction_output(IMX_GPIO_NR(2, 07), 0);
++       gpio_direction_output(IMX_GPIO_NR(2, 8), 0);
++       gpio_direction_output(IMX_GPIO_NR(2, 9), 0);
++       printf("gpio_exp_set_init stop\n");
++}
++
+ #if defined(CONFIG_USB_DWC3) || defined(CONFIG_USB_XHCI_IMX8M)
+ int board_usb_init(int index, enum usb_init_type init)
+ {
+@@ -325,6 +351,7 @@ int board_init(void)
+ #endif
+	user_leds_init();
+	zigbee_reset_init();
++	gpio_exp_set_init();
+	return 0;
+ }
+
+--
+2.17.1
