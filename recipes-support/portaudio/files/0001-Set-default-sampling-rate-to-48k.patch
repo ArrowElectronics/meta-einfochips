@@ -1,0 +1,200 @@
+From ae0b4efb3fa9cf7ff5d1dd5f43610f23349eb958 Mon Sep 17 00:00:00 2001
+From: Anil Patel <anil.patel@einfochips.com>
+Date: Wed, 13 Mar 2019 18:50:17 +0530
+Subject: [PATCH] Set default sampling rate to 48k
+
+This change required for DMIC as ESAI DMIC is not supported 44.1k Sampling rate
+---
+ src/hostapi/alsa/pa_linux_alsa.c     | 6 +++---
+ src/hostapi/asihpi/pa_linux_asihpi.c | 4 ++--
+ 2 files changed, 5 insertions(+), 5 deletions(-)
+
+diff --git a/src/hostapi/alsa/pa_linux_alsa.c b/src/hostapi/alsa/pa_linux_alsa.c
+index 584cde8..1646d11 100644
+--- a/src/hostapi/alsa/pa_linux_alsa.c
++++ b/src/hostapi/alsa/pa_linux_alsa.c
+@@ -317,47 +317,47 @@ int _PA_LOCAL_IMPL(snd_pcm_hw_params_get_period_size_max) (const snd_pcm_hw_para
+ }
+
+ int _PA_LOCAL_IMPL(snd_pcm_hw_params_get_buffer_size_max) (const snd_pcm_hw_params_t *params, snd_pcm_uframes_t *val)
+ {
+     int ret;
+     int dir                = 0;
+     snd_pcm_uframes_t pmax = 0;
+     unsigned int      pcnt = 0;
+
+     if(( ret = _PA_LOCAL_IMPL(snd_pcm_hw_params_get_period_size_max)(params, &pmax, &dir) ) < 0 )
+         return ret;
+     if(( ret = _PA_LOCAL_IMPL(snd_pcm_hw_params_get_periods_max)(params, &pcnt, &dir) ) < 0 )
+         return ret;
+
+     (*val) = pmax * pcnt;
+     return 0;
+ }
+
+ int _PA_LOCAL_IMPL(snd_pcm_hw_params_get_rate_min) (const snd_pcm_hw_params_t *params, unsigned int *val, int *dir)
+ {
+-    (*val) = 44100;
++    (*val) = 48000;
+     return 0;
+ }
+
+ int _PA_LOCAL_IMPL(snd_pcm_hw_params_get_rate_max) (const snd_pcm_hw_params_t *params, unsigned int *val, int *dir)
+ {
+-    (*val) = 44100;
++    (*val) = 48000;
+     return 0;
+ }
+
+ #endif // PA_ALSA_DYNAMIC
+
+ /* Trying to load Alsa library dynamically if 'PA_ALSA_DYNAMIC' is defined, othervise
+    will link during compilation.
+ */
+ static int PaAlsa_LoadLibrary()
+ {
+ #ifdef PA_ALSA_DYNAMIC
+
+     PA_DEBUG(( "%s: loading ALSA library file - %s\n", __FUNCTION__, g_AlsaLibName ));
+
+     dlerror();
+     g_AlsaLib = dlopen(g_AlsaLibName, (RTLD_NOW|RTLD_GLOBAL) );
+     if (g_AlsaLib == NULL)
+     {
+         PA_DEBUG(( "%s: failed dlopen() ALSA library file - %s, error: %s\n", __FUNCTION__, g_AlsaLibName, dlerror() ));
+         return 0;
+@@ -865,41 +865,41 @@ static PaError GropeDevice( snd_pcm_t* pcm, int isPlug, StreamDirection mode, in
+
+     ENSURE_( alsa_snd_pcm_nonblock( pcm, 0 ), paUnanticipatedHostError );
+
+     alsa_snd_pcm_hw_params_alloca( &hwParams );
+     alsa_snd_pcm_hw_params_any( pcm, hwParams );
+
+     if( defaultSr >= 0 )
+     {
+         /* Could be that the device opened in one mode supports samplerates that the other mode wont have,
+          * so try again .. */
+         if( SetApproximateSampleRate( pcm, hwParams, defaultSr ) < 0 )
+         {
+             defaultSr = -1.;
+             alsa_snd_pcm_hw_params_any( pcm, hwParams ); /* Clear any params (rate) that might have been set */
+             PA_DEBUG(( "%s: Original default samplerate failed, trying again ..\n", __FUNCTION__ ));
+         }
+     }
+
+     if( defaultSr < 0. )           /* Default sample rate not set */
+     {
+-        unsigned int sampleRate = 44100;        /* Will contain approximate rate returned by alsa-lib */
++        unsigned int sampleRate = 48000;        /* Will contain approximate rate returned by alsa-lib */
+
+         /* Don't allow rate resampling when probing for the default rate (but ignore if this call fails) */
+         alsa_snd_pcm_hw_params_set_rate_resample( pcm, hwParams, 0 );
+         if( alsa_snd_pcm_hw_params_set_rate_near( pcm, hwParams, &sampleRate, NULL ) < 0 )
+         {
+             result = paUnanticipatedHostError;
+             goto error;
+         }
+         ENSURE_( GetExactSampleRate( hwParams, &defaultSr ), paUnanticipatedHostError );
+     }
+
+     ENSURE_( alsa_snd_pcm_hw_params_get_channels_min( hwParams, &minChans ), paUnanticipatedHostError );
+     ENSURE_( alsa_snd_pcm_hw_params_get_channels_max( hwParams, &maxChans ), paUnanticipatedHostError );
+     assert( maxChans <= INT_MAX );
+     assert( maxChans > 0 );    /* Weird linking issue could cause wrong version of ALSA symbols to be called,
+                                    resulting in zeroed values */
+
+     /* XXX: Limit to sensible number (ALSA plugins accept a crazy amount of channels)? */
+     if( isPlug && maxChans > 128 )
+     {
+diff --git a/src/hostapi/asihpi/pa_linux_asihpi.c b/src/hostapi/asihpi/pa_linux_asihpi.c
+index f5a5290..bf1efd3 100644
+--- a/src/hostapi/asihpi/pa_linux_asihpi.c
++++ b/src/hostapi/asihpi/pa_linux_asihpi.c
+@@ -638,41 +638,41 @@ static PaError PaAsiHpi_BuildDeviceList( PaAsiHpiHostApiRepresentation *hpiHostA
+                 /* Set common PortAudio device stats */
+                 baseDeviceInfo->structVersion = 2;
+                 /* Make sure name string is owned by API info structure */
+                 sprintf( srcName,
+                          "Adapter %d (%4X) - Input Stream %d", i+1, type, j+1 );
+                 PA_UNLESS_( deviceName = (char *) PaUtil_GroupAllocateMemory(
+                                              hpiHostApi->allocations, strlen(srcName) + 1 ), paInsufficientMemory );
+                 strcpy( deviceName, srcName );
+                 baseDeviceInfo->name = deviceName;
+                 baseDeviceInfo->hostApi = hpiHostApi->hostApiIndex;
+                 baseDeviceInfo->maxInputChannels = HPI_MAX_CHANNELS;
+                 baseDeviceInfo->maxOutputChannels = 0;
+                 /* Default latency values for interactive performance */
+                 baseDeviceInfo->defaultLowInputLatency = 0.01;
+                 baseDeviceInfo->defaultLowOutputLatency = -1.0;
+                 /* Default latency values for robust non-interactive applications (eg. playing sound files) */
+                 baseDeviceInfo->defaultHighInputLatency = 0.2;
+                 baseDeviceInfo->defaultHighOutputLatency = -1.0;
+                 /* HPI interface can actually handle any sampling rate to 1 Hz accuracy,
+                 * so this default is as good as any */
+-                baseDeviceInfo->defaultSampleRate = 44100;
++                baseDeviceInfo->defaultSampleRate = 48000;
+
+                 /* Store device in global PortAudio list */
+                 hostApi->deviceInfos[deviceIndex++] = (PaDeviceInfo *) hpiDevice;
+             }
+
+             /* Now add all output streams as devices (I know, the repetition is painful) */
+             for( j=0; j < outStreams; ++j )
+             {
+                 PaAsiHpiDeviceInfo *hpiDevice = &hpiDeviceList[deviceIndex];
+                 PaDeviceInfo *baseDeviceInfo = &hpiDevice->baseDeviceInfo;
+                 char srcName[72];
+                 char *deviceName;
+
+                 memset( hpiDevice, 0, sizeof(PaAsiHpiDeviceInfo) );
+                 /* Set implementation-specific device details */
+                 hpiDevice->adapterIndex = idx;
+                 hpiDevice->adapterType = type;
+                 hpiDevice->adapterVersion = version;
+                 hpiDevice->adapterSerialNumber = serial;
+                 hpiDevice->streamIndex = j;
+@@ -680,41 +680,41 @@ static PaError PaAsiHpi_BuildDeviceList( PaAsiHpiHostApiRepresentation *hpiHostA
+                 /* Set common PortAudio device stats */
+                 baseDeviceInfo->structVersion = 2;
+                 /* Make sure name string is owned by API info structure */
+                 sprintf( srcName,
+                          "Adapter %d (%4X) - Output Stream %d", i+1, type, j+1 );
+                 PA_UNLESS_( deviceName = (char *) PaUtil_GroupAllocateMemory(
+                                              hpiHostApi->allocations, strlen(srcName) + 1 ), paInsufficientMemory );
+                 strcpy( deviceName, srcName );
+                 baseDeviceInfo->name = deviceName;
+                 baseDeviceInfo->hostApi = hpiHostApi->hostApiIndex;
+                 baseDeviceInfo->maxInputChannels = 0;
+                 baseDeviceInfo->maxOutputChannels = HPI_MAX_CHANNELS;
+                 /* Default latency values for interactive performance. */
+                 baseDeviceInfo->defaultLowInputLatency = -1.0;
+                 baseDeviceInfo->defaultLowOutputLatency = 0.01;
+                 /* Default latency values for robust non-interactive applications (eg. playing sound files). */
+                 baseDeviceInfo->defaultHighInputLatency = -1.0;
+                 baseDeviceInfo->defaultHighOutputLatency = 0.2;
+                 /* HPI interface can actually handle any sampling rate to 1 Hz accuracy,
+                 * so this default is as good as any */
+-                baseDeviceInfo->defaultSampleRate = 44100;
++                baseDeviceInfo->defaultSampleRate = 48000;
+
+                 /* Store device in global PortAudio list */
+                 hostApi->deviceInfos[deviceIndex++] = (PaDeviceInfo *) hpiDevice;
+             }
+         }
+     }
+
+     /* Finally acknowledge checked devices */
+     baseApiInfo->deviceCount = deviceIndex;
+
+ error:
+     return result;
+ }
+
+
+ /** Initialize host API implementation.
+  This is the only function exported beyond this file. It is called by PortAudio to initialize
+  the host API. It stores API info, finds and registers all devices, and sets up callback and
+  blocking interfaces.
+
+--
+2.7.4
