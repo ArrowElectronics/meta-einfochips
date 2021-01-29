@@ -1,0 +1,50 @@
+From 668f1c482cee3669500c58857162d61b92298b8e Mon Sep 17 00:00:00 2001
+From: "darshak.patel" <darshak.patel@einfochips.com>
+Date: Sat, 5 Dec 2020 17:38:39 +0530
+Subject: [PATCH] porting imx8mqthor in optee-os-imx
+
+---
+ core/arch/arm/plat-imx/conf.mk | 8 +++++++-
+ scripts/nxp_build.sh           | 1 +
+ 2 files changed, 8 insertions(+), 1 deletion(-)
+
+diff --git a/core/arch/arm/plat-imx/conf.mk b/core/arch/arm/plat-imx/conf.mk
+index 743eb88c..0410958a 100644
+--- a/core/arch/arm/plat-imx/conf.mk
++++ b/core/arch/arm/plat-imx/conf.mk
+@@ -60,7 +60,8 @@ mx7ulp-flavorlist = \
+	mx7ulpevk
+
+ mx8mq-flavorlist = \
+-	mx8mqevk
++	mx8mqevk \
++	mx8mqthor96
+
+ mx8mm-flavorlist = \
+	mx8mmevk
+@@ -337,6 +338,11 @@ CFG_DDR_SIZE ?= 0xc0000000
+ CFG_UART_BASE ?= UART1_BASE
+ endif
+
++ifneq (,$(filter $(PLATFORM_FLAVOR),mx8mqthor96))
++CFG_DDR_SIZE ?= 0xc0000000
++CFG_UART_BASE ?= UART1_BASE
++endif
++
+ ifneq (,$(filter $(PLATFORM_FLAVOR),mx8mmevk))
+ CFG_DDR_SIZE ?= 0x80000000
+ CFG_UART_BASE ?= UART2_BASE
+diff --git a/scripts/nxp_build.sh b/scripts/nxp_build.sh
+index 38198935..00e560dd 100755
+--- a/scripts/nxp_build.sh
++++ b/scripts/nxp_build.sh
+@@ -31,6 +31,7 @@ boards_list=(
+	mx7ulpevk \
+	mx8dxmek \
+	mx8mqevk \
++	mx8mqthor96 \
+	mx8mmevk \
+	mx8mnevk \
+	mx8mpevk \
+--
+2.17.1
