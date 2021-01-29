@@ -1,0 +1,131 @@
+From dbd8ca500568abab62b09e7622ea7a4ef2ac0518 Mon Sep 17 00:00:00 2001
+From: "darshak.patel" <darshak.patel@einfochips.com>
+Date: Wed, 23 Dec 2020 14:24:39 +0530
+Subject: [PATCH] low speed expansion
+
+%% original patch: 0001-low-speed-expansion.patch
+---
+ arch/arm/dts/fsl-imx8qxp-aiml-ei.dts          |  1 -
+ .../imx8qxp_aiml_ei/imx8qxp_aiml_ei.c         | 91 +++++++++++++++++++
+ 2 files changed, 91 insertions(+), 1 deletion(-)
+
+diff --git a/arch/arm/dts/fsl-imx8qxp-aiml-ei.dts b/arch/arm/dts/fsl-imx8qxp-aiml-ei.dts
+index 457f5ef9e4..5d8a0eb28e 100644
+--- a/arch/arm/dts/fsl-imx8qxp-aiml-ei.dts
++++ b/arch/arm/dts/fsl-imx8qxp-aiml-ei.dts
+@@ -51,7 +51,6 @@
+	imx8qxp-mek {
+		pinctrl_hog: hoggrp {
+			fsl,pins = <
+-				SC_P_MCLK_OUT0_ADMA_ACM_MCLK_OUT0	0x0600004c
+				SC_P_COMP_CTL_GPIO_1V8_3V3_GPIORHB_PAD	0x000514a0
+			>;
+		};
+diff --git a/board/freescale/imx8qxp_aiml_ei/imx8qxp_aiml_ei.c b/board/freescale/imx8qxp_aiml_ei/imx8qxp_aiml_ei.c
+index d5d3a9779d..8ef8dee3b6 100644
+--- a/board/freescale/imx8qxp_aiml_ei/imx8qxp_aiml_ei.c
++++ b/board/freescale/imx8qxp_aiml_ei/imx8qxp_aiml_ei.c
+@@ -182,10 +182,101 @@ int checkboard(void)
+
+	return 0;
+ }
++#define LS_GPIO1_31 IMX_GPIO_NR(1, 31)
++#define LS_GPIO2_0 IMX_GPIO_NR(2, 0)
++#define LS_GPIO1_13 IMX_GPIO_NR(1, 13)
++#define LS_GPIO1_14 IMX_GPIO_NR(1, 14)
++#define LS_GPIO3_7 IMX_GPIO_NR(3, 7)
++#define LS_GPIO1_1 IMX_GPIO_NR(1, 1)
++#define LS_GPIO1_7 IMX_GPIO_NR(1, 7)
++#define LS_GPIO0_20 IMX_GPIO_NR(0, 20)
++#define LS_GPIO0_19 IMX_GPIO_NR(0, 19)
++
++static iomux_cfg_t ls_gpios[] = {
++    SC_P_MIPI_DSI1_GPIO0_00 | MUX_MODE_ALT(4) | MUX_PAD_CTRL(GPIO_PAD_CTRL),
++    SC_P_MIPI_DSI1_GPIO0_01 | MUX_MODE_ALT(4) | MUX_PAD_CTRL(GPIO_PAD_CTRL),
++    SC_P_MIPI_CSI0_GPIO0_01 | MUX_MODE_ALT(4) | MUX_PAD_CTRL(GPIO_PAD_CTRL),
++    SC_P_ADC_IN4 | MUX_MODE_ALT(4) | MUX_PAD_CTRL(GPIO_PAD_CTRL),
++    SC_P_ADC_IN5 | MUX_MODE_ALT(4) | MUX_PAD_CTRL(GPIO_PAD_CTRL),
++    SC_P_SPI2_SDO | MUX_MODE_ALT(4) | MUX_PAD_CTRL(GPIO_PAD_CTRL),
++    SC_P_SPI0_CS1 | MUX_MODE_ALT(4) | MUX_PAD_CTRL(GPIO_PAD_CTRL),
++    SC_P_MCLK_OUT0 | MUX_MODE_ALT(4) | MUX_PAD_CTRL(GPIO_PAD_CTRL),
++    SC_P_MCLK_IN0 | MUX_MODE_ALT(4) | MUX_PAD_CTRL(GPIO_PAD_CTRL),
++};
++static void ls_gpios_fun()
++{
++    int ret;
++    imx8_iomux_setup_multiple_pads(ls_gpios, ARRAY_SIZE(ls_gpios));
++
++    ret = gpio_request(LS_GPIO1_31, "ls_gpio1_31");
++    if (ret)
++        printf("LS_GPIO1_31 request failed %d", ret);
++    ret= gpio_direction_output(LS_GPIO1_31, 0);
++    if (ret)
++        printf("ls_gpio1_29 direction failed %d", ret);
++
++    ret = gpio_request(LS_GPIO2_0, "LS_GPIO2_0");
++    if (ret)
++        printf("LS_GPIO2_0 request failed %d", ret);
++    ret= gpio_direction_output(LS_GPIO2_0, 0);
++    if (ret)
++        printf("ls_gpio1_30 direction failed %d", ret);
++
++
++    ret = gpio_request(LS_GPIO1_13, "ls_gpio1_13");
++    if (ret)
++        printf("ls_gpio1_13 request failed %d", ret);
++    ret= gpio_direction_output(LS_GPIO1_13, 0);
++    if (ret)
++        printf("ls_gpio1_13 direction failed %d", ret);
++
++    ret = gpio_request(LS_GPIO1_14, "ls_gpio1_14");
++    if (ret)
++        printf("ls_gpio1_14 request failed %d", ret);
++    ret= gpio_direction_output(LS_GPIO1_14, 0);
++    if (ret)
++        printf("ls_gpio1_14 direction failed %d", ret);
++
++    ret = gpio_request(LS_GPIO3_7, "ls_gpio3_7");
++    if (ret)
++        printf("ls_gpio3_7 request failed %d", ret);
++    ret= gpio_direction_output(LS_GPIO3_7, 0);
++    if (ret)
++        printf("ls_gpio3_7 direction failed %d", ret);
++
++    ret = gpio_request(LS_GPIO1_1, "ls_gpio1_1");
++    if (ret)
++        printf("ls_gpio1_1 request failed %d", ret);
++    ret= gpio_direction_output(LS_GPIO1_1, 0);
++    if (ret)
++        printf("ls_gpio1_1 direction failed %d", ret);
++
++    ret = gpio_request( LS_GPIO1_7, "LS_GPIO1_7");
++    if (ret)
++        printf("LS_GPIO1_7 request failed %d", ret);
++    ret= gpio_direction_output(LS_GPIO1_7, 0);
++    if (ret)
++        printf("LS_GPIO1_7 direction failed %d", ret);
++
++    ret = gpio_request(LS_GPIO0_20, "LS_GPIO0_20");
++    if (ret)
++        printf("LS_GPIO0_20 request failed %d", ret);
++    ret= gpio_direction_output(LS_GPIO0_20, 0);
++    if (ret)
++        printf("LS_GPIO0_20 direction failed %d", ret);
++
++    ret = gpio_request(LS_GPIO0_19, "LS_GPIO0_19");
++    if (ret)
++        printf("LS_GPIO0_19 request failed %d", ret);
++    ret= gpio_direction_output(LS_GPIO0_19, 0);
++    if (ret)
++        printf("LS_GPIO0_19 direction failed %d", ret);
++}
+
+ int board_init(void)
+ {
+	board_gpio_init();
++    	ls_gpios_fun();
+
+ #ifdef CONFIG_SNVS_SEC_SC_AUTO
+	{
+--
+2.17.1
