@@ -1,0 +1,94 @@
+From 9797896b7ee1ef486ac5d8c888930cbf74c71814 Mon Sep 17 00:00:00 2001
+From: "Darshak.patel" <darshak.patel@einfochips.com>
+Date: Wed, 11 Nov 2020 18:39:34 +0530
+Subject: [PATCH] IMX8 AIML: Added user leds support
+
+---
+ arch/arm64/boot/dts/freescale/imx8x-aiml-ei.dtsi | 60 +++++++++++++++++++++++-
+ 1 file changed, 59 insertions(+), 1 deletion(-)
+
+diff --git a/arch/arm64/boot/dts/freescale/imx8x-aiml-ei.dtsi b/arch/arm64/boot/dts/freescale/imx8x-aiml-ei.dtsi
+index e4efe4f..429feb2 100644
+--- a/arch/arm64/boot/dts/freescale/imx8x-aiml-ei.dtsi
++++ b/arch/arm64/boot/dts/freescale/imx8x-aiml-ei.dtsi
+@@ -14,6 +14,54 @@
+		reg = <0x00000000 0x80000000 0 0x40000000>;
+	};
+
++	leds {
++		compatible = "gpio-leds";
++		pinctrl-names = "default";
++		pinctrl-0 = <&pinctrl_leds>;
++
++		user-led1 {
++			label = "green:user1";
++			gpios = <&lsio_gpio4 16 GPIO_ACTIVE_HIGH>;
++			linux,default-trigger = "none";
++			default-state = "on";
++		};
++
++		user-led2 {
++			label = "green:user2";
++			gpios = <&lsio_gpio0 6 GPIO_ACTIVE_HIGH>;
++			linux,default-trigger = "none";
++			default-state = "off";
++		};
++
++		user-led3 {
++			label = "green:user3";
++			gpios = <&lsio_gpio0 7 GPIO_ACTIVE_HIGH>;
++			linux,default-trigger = "none";
++			default-state = "off";
++		};
++
++		user-led4 {
++			label = "green:user4";
++			gpios = <&lsio_gpio4 21 GPIO_ACTIVE_HIGH>;
++			panic-indicator;
++			linux,default-trigger = "none";
++		};
++
++		wlan-active-led {
++			label = "yellow:wlan";
++			gpios = <&lsio_gpio4 17 GPIO_ACTIVE_HIGH>;
++			linux,default-trigger = "phy0tx";
++			default-state = "off";
++		};
++
++		bt-active-led {
++			label = "blue:bt";
++			gpios = <&lsio_gpio4 18 GPIO_ACTIVE_HIGH>;
++			linux,default-trigger = "hci0-power";
++			default-state = "off";
++		};
++	};
++
+	reserved-memory {
+		#address-cells = <2>;
+		#size-cells = <2>;
+@@ -934,7 +982,6 @@
+	pinctrl_usdhc2_gpio: usdhc2gpiogrp {
+		fsl,pins = <
+			IMX8QXP_USDHC1_RESET_B_LSIO_GPIO4_IO19     0x00000021
+-			IMX8QXP_USDHC1_WP_LSIO_GPIO4_IO21          0x00000021
+			IMX8QXP_USDHC1_CD_B_LSIO_GPIO4_IO22        0x00000021
+		>;
+	};
+@@ -1020,4 +1067,15 @@
+		>;
+	};
+
++	pinctrl_leds: ledsgrp{
++		fsl,pins = <
++			IMX8QXP_ESAI0_TX2_RX3_LSIO_GPIO0_IO06           0x00000021
++			IMX8QXP_ESAI0_TX3_RX2_LSIO_GPIO0_IO07           0x00000021
++			IMX8QXP_EMMC0_DATA7_LSIO_GPIO4_IO16         0x00000021
++			IMX8QXP_USDHC1_WP_LSIO_GPIO4_IO21           0x00000021
++			IMX8QXP_EMMC0_STROBE_LSIO_GPIO4_IO17            0x00000021
++			IMX8QXP_EMMC0_RESET_B_LSIO_GPIO4_IO18           0x00000021
++		>;
++	};
++
+ };
+--
+2.7.4

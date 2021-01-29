@@ -1,0 +1,150 @@
+From c868bafb6fd2c83773c32d674f330e39f8355012 Mon Sep 17 00:00:00 2001
+From: "Darshak.patel" <darshak.patel@einfochips.com>
+Date: Tue, 24 Nov 2020 15:36:24 +0530
+Subject: [PATCH] IMX8 AIML: Added Low speed expansion i2c & spi
+
+---
+ arch/arm64/boot/dts/freescale/imx8x-aiml-ei.dtsi | 74 ++++++++++++++++--------
+ 1 file changed, 49 insertions(+), 25 deletions(-)
+
+diff --git a/arch/arm64/boot/dts/freescale/imx8x-aiml-ei.dtsi b/arch/arm64/boot/dts/freescale/imx8x-aiml-ei.dtsi
+index 429feb2..6b92301 100644
+--- a/arch/arm64/boot/dts/freescale/imx8x-aiml-ei.dtsi
++++ b/arch/arm64/boot/dts/freescale/imx8x-aiml-ei.dtsi
+@@ -332,6 +332,15 @@
+	status = "okay";
+ };
+
++&i2c0_mipi_lvds1 {	/* Low speed exp I2C */
++	#address-cells = <1>;
++	#size-cells = <0>;
++	pinctrl-names = "default";
++	pinctrl-0 = <&pinctrl_i2c0_mipi_lvds1>;
++	clock-frequency = <100000>;
++	status = "okay";
++};
++
+ &ldb1_phy {
+	status = "okay";
+ };
+@@ -434,7 +443,7 @@
+	status = "okay";
+ };
+
+-&lpuart1 {
++&lpuart1 { /* Low speed exp uart */
+	pinctrl-names = "default";
+	pinctrl-0 = <&pinctrl_lpuart1>;
+	status = "okay";
+@@ -479,7 +488,7 @@
+	status = "okay";
+ };
+
+-&sai0 {
++&sai0 {/* Low speed exp i2s */
+	#sound-dai-cells = <0>;
+	assigned-clocks = <&clk IMX_SC_R_AUDIO_PLL_0 IMX_SC_PM_CLK_PLL>,
+			<&clk IMX_SC_R_AUDIO_PLL_0 IMX_SC_PM_CLK_SLV_BUS>,
+@@ -491,17 +500,6 @@
+	status = "okay";
+ };
+
+-&sai1 {
+-	assigned-clocks = <&clk IMX_SC_R_AUDIO_PLL_0 IMX_SC_PM_CLK_PLL>,
+-			<&clk IMX_SC_R_AUDIO_PLL_0 IMX_SC_PM_CLK_SLV_BUS>,
+-			<&clk IMX_SC_R_AUDIO_PLL_0 IMX_SC_PM_CLK_MST_BUS>,
+-			<&sai1_lpcg 0>; /* FIXME: should be sai1, original code is 0 */
+-	assigned-clock-rates = <786432000>, <49152000>, <12288000>, <49152000>;
+-	pinctrl-names = "default";
+-	pinctrl-0 = <&pinctrl_sai1>;
+-	status = "okay";
+-};
+-
+ &sai4 {
+	assigned-clocks = <&acm IMX_ADMA_ACM_SAI4_MCLK_SEL>,
+			<&clk IMX_SC_R_AUDIO_PLL_1 IMX_SC_PM_CLK_PLL>,
+@@ -582,6 +580,14 @@
+	};
+ };
+
++&lpspi3 {	/* Low speed exp SPI */
++	fsl,spi-num-chipselects = <1>;
++	pinctrl-names = "default";
++	pinctrl-0 = <&pinctrl_lpspi3 &pinctrl_lpspi3_cs>;
++	cs-gpios = <&lsio_gpio0 16 GPIO_ACTIVE_LOW>;
++	status = "okay";
++};
++
+ &rpmsg{
+	/*
+	 * 64K for one rpmsg instance:
+@@ -820,7 +826,6 @@
+
+	pinctrl_hog: hoggrp {
+		fsl,pins = <
+-			IMX8QXP_MCLK_OUT0_ADMA_ACM_MCLK_OUT0       0x0600004c
+			IMX8QXP_COMP_CTL_GPIO_1V8_3V3_GPIORHB_PAD  0x000514a0
+		>;
+	};
+@@ -851,7 +856,6 @@
+		fsl,pins = <
+			IMX8QXP_MIPI_DSI1_I2C0_SCL_MIPI_DSI1_I2C0_SCL		0xc6000020
+			IMX8QXP_MIPI_DSI1_I2C0_SDA_MIPI_DSI1_I2C0_SDA		0xc6000020
+-			IMX8QXP_MIPI_DSI1_GPIO0_01_LSIO_GPIO2_IO00		0x00000020
+		>;
+	};
+
+@@ -958,16 +962,6 @@
+		>;
+	};
+
+-	pinctrl_sai1: sai1grp {
+-		fsl,pins = <
+-			IMX8QXP_SAI1_RXD_ADMA_SAI1_RXD     0x06000040
+-			IMX8QXP_SAI1_RXC_ADMA_SAI1_TXC     0x06000040
+-			IMX8QXP_SAI1_RXFS_ADMA_SAI1_TXFS   0x06000040
+-			IMX8QXP_SPI0_CS1_ADMA_SAI1_TXD     0x06000060
+-			IMX8QXP_SPI2_CS0_LSIO_GPIO1_IO00   0x06000040
+-		>;
+-	};
+-
+	pinctrl_usdhc1: usdhc1grp {
+		fsl,pins = <
+			IMX8QXP_EMMC0_CLK_CONN_EMMC0_CLK			0x06000041
+@@ -1078,4 +1072,34 @@
+		>;
+	};
+
++	pinctrl_lpspi3: lpspi3grp { /* Low speed exp SPI */
++		fsl,pins = <
++			IMX8QXP_SPI3_SCK_ADMA_SPI3_SCK                                     	0x0600004c
++			IMX8QXP_SPI3_SDO_ADMA_SPI3_SDO                                    	0x0600004c
++			IMX8QXP_SPI3_SDI_ADMA_SPI3_SDI                                     	0x0600004c
++		>;
++	};
++
++	pinctrl_lpspi3_cs: lpspi3cs { /* Low speed exp SPI */
++		fsl,pins = <
++			IMX8QXP_SPI3_CS0_LSIO_GPIO0_IO16    0x21
++		>;
++	};
++
++	pinctrl_lsexpgpio:lsexp { /* Low speed expansion GPIO */
++		fsl,pins = <
++			IMX8QXP_SAI1_RXD_LSIO_GPIO0_IO29                   0x21
++			IMX8QXP_SPI0_CS1_LSIO_GPIO1_IO07                   0x21
++			IMX8QXP_MCLK_OUT0_LSIO_GPIO0_IO20                  0x21
++			IMX8QXP_SPI2_CS0_LSIO_GPIO1_IO00                   0x21
++			IMX8QXP_MCLK_IN0_LSIO_GPIO0_IO19                   0x21
++			IMX8QXP_SPI2_SDO_LSIO_GPIO1_IO01                   0x21
++			IMX8QXP_SPI2_SCK_LSIO_GPIO1_IO03                   0x21
++			IMX8QXP_MIPI_DSI1_GPIO0_00_LSIO_GPIO1_IO31         0x21
++			IMX8QXP_MIPI_DSI1_GPIO0_01_LSIO_GPIO2_IO00         0x21
++			IMX8QXP_ADC_IN5_LSIO_GPIO1_IO13                    0x21
++			IMX8QXP_ADC_IN4_LSIO_GPIO1_IO14                    0x21
++		>;
++	};
++
+ };
+--
+2.7.4

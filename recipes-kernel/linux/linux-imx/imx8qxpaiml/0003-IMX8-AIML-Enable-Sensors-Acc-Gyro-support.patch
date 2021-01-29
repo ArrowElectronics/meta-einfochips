@@ -1,0 +1,38 @@
+From 219bd58f6206941e6dec6e8104ebc0ccbc8cf46c Mon Sep 17 00:00:00 2001
+From: "darshak.patel" <darshak.patel@einfochips.com>
+Date: Tue, 20 Oct 2020 15:58:06 +0530
+Subject: [PATCH] IMX8 AIML: Enable Sensors (Acc/Gyro) support
+
+    Command for Testing :
+
+    ACCEL:
+	$ cat /sys/bus/i2c/devices/16-006a/iio\:device1/in_accel_x_raw
+	$ cat /sys/bus/i2c/devices/16-006a/iio\:device1/in_accel_y_raw
+	$ cat /sys/bus/i2c/devices/16-006a/iio\:device1/in_accel_z_raw
+    GYRO:
+	$ cat /sys/bus/i2c/devices/16-006a/iio\:device0/in_anglvel_x_raw
+	$ cat /sys/bus/i2c/devices/16-006a/iio\:device0/in_anglvel_y_raw
+	$ cat /sys/bus/i2c/devices/16-006a/iio\:device0/in_anglvel_z_raw
+---
+ arch/arm64/boot/dts/freescale/imx8x-aiml-ei.dtsi | 6 ++++++
+ 1 file changed, 6 insertions(+)
+
+diff --git a/arch/arm64/boot/dts/freescale/imx8x-aiml-ei.dtsi b/arch/arm64/boot/dts/freescale/imx8x-aiml-ei.dtsi
+index ec5b0940ba17..23551c7268ee 100644
+--- a/arch/arm64/boot/dts/freescale/imx8x-aiml-ei.dtsi
++++ b/arch/arm64/boot/dts/freescale/imx8x-aiml-ei.dtsi
+@@ -159,6 +159,12 @@
+		status = "okay";
+	};
+
++	sensors: lsm6ds3h@6a {
++		compatible = "st,lsm6ds3h";
++		reg = <0x6a>;
++		status = "okay";
++	};
++
+	ov5640: ov5640@3c {
+		compatible = "ovti,ov5640";
+		reg = <0x3c>;
+--
+2.17.1

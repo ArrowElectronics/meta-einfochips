@@ -1,0 +1,294 @@
+From 186f52e44fce097c229d05ae61f6b89decacc5bf Mon Sep 17 00:00:00 2001
+From: "Darshak.patel" <darshak.patel@einfochips.com>
+Date: Fri, 23 Oct 2020 13:59:59 +0530
+Subject: [PATCH] IMX8 AIML: Added 4 DMIC support on ESAI port
+
+Software Playback and  Capture switch in machine file
+
+Able to generate the Clock and FS : 1.5935MHz and 48Khz
+Supported sample rate are :
+48000 (default)
+		96000
+		192000
+
+		Command:
+		arecord -D hw:1,0 -c 2 -r 48000 -f S16_LE tt.wav (bclk: 1536000)
+		aplay -D hw:1,0 piano2.wav (bclk: 1536000)
+
+DMIC supports only 2MHZ to 4MHZ (change to 32 bot slot width)
+		arecord support format only
+		- S8
+		- S16_LE
+		- S24_LE
+
+		Add support for S32_LE
+
+%% original patch: 0008-IMX8-AIML-Added-4-DMIC-support-on-ESAI-port.patch
+---
+ arch/arm64/boot/dts/freescale/imx8x-aiml-ei.dtsi |  12 +-
+ sound/soc/fsl/Kconfig                            |  11 ++
+ sound/soc/fsl/Makefile                           |   2 +
+ sound/soc/fsl/fsl_esai.c                         |   3 +-
+ sound/soc/fsl/imx-sph0645.c                      | 154 +++++++++++++++++++++++
+ 5 files changed, 177 insertions(+), 5 deletions(-)
+ create mode 100644 sound/soc/fsl/imx-sph0645.c
+
+diff --git a/arch/arm64/boot/dts/freescale/imx8x-aiml-ei.dtsi b/arch/arm64/boot/dts/freescale/imx8x-aiml-ei.dtsi
+index 03102ef..d6bc843 100644
+--- a/arch/arm64/boot/dts/freescale/imx8x-aiml-ei.dtsi
++++ b/arch/arm64/boot/dts/freescale/imx8x-aiml-ei.dtsi
+@@ -93,6 +93,14 @@
+		spdif-out;
+	};
+
++	sound-dmic {
++		compatible = "fsl,imx-audio-sph0645",
++				   "fsl,imx-mic-sph0645";
++		model = "imx-sph0645";
++		ssi-controller = <&esai0>;
++		status = "okay";
++	};
++
+	imx8x_cm4: imx8x_cm4@0 {
+		compatible = "fsl,imx8qxp-cm4";
+		rsc-da = <0x90000000>;
+@@ -400,7 +408,6 @@
+			<&esai0_lpcg 0>;
+	assigned-clock-parents = <&aud_pll_div0_lpcg 0>;
+	assigned-clock-rates = <0>, <786432000>, <49152000>, <12288000>, <49152000>;
+-	fsl,txm-rxs;
+	status = "okay";
+ };
+
+@@ -780,13 +787,10 @@
+	pinctrl_esai0: esai0grp {
+		fsl,pins = <
+			IMX8QXP_ESAI0_FSR_ADMA_ESAI0_FSR           0xc6000040
+-			IMX8QXP_ESAI0_FST_ADMA_ESAI0_FST           0xc6000040
+			IMX8QXP_ESAI0_SCKR_ADMA_ESAI0_SCKR         0xc6000040
+			IMX8QXP_ESAI0_SCKT_ADMA_ESAI0_SCKT         0xc6000040
+			IMX8QXP_ESAI0_TX0_ADMA_ESAI0_TX0           0xc6000040
+			IMX8QXP_ESAI0_TX1_ADMA_ESAI0_TX1           0xc6000040
+-			IMX8QXP_ESAI0_TX2_RX3_ADMA_ESAI0_TX2_RX3   0xc6000040
+-			IMX8QXP_ESAI0_TX3_RX2_ADMA_ESAI0_TX3_RX2   0xc6000040
+			IMX8QXP_ESAI0_TX4_RX1_ADMA_ESAI0_TX4_RX1   0xc6000040
+			IMX8QXP_ESAI0_TX5_RX0_ADMA_ESAI0_TX5_RX0   0xc6000040
+		>;
+diff --git a/sound/soc/fsl/Kconfig b/sound/soc/fsl/Kconfig
+index b96947d..e4e2325 100644
+--- a/sound/soc/fsl/Kconfig
++++ b/sound/soc/fsl/Kconfig
+@@ -43,6 +43,17 @@ config SND_SOC_FSL_SSI
+	  This option is only useful for out-of-tree drivers since
+	  in-tree drivers select it automatically.
+
++config SND_SOC_IMX_SPH0645
++	  tristate "SoC Audio support for i.MX boards with DMIC"
++	  select SND_SOC_IMX_PCM_DMA
++	  select SND_SOC_FSL_ESAI
++	  select SND_SOC_FSL_SPDIF
++	  select SND_SOC_FSL_ASRC
++	  select SND_SOC_FSL_UTILS
++	  help
++		  SoC Audio support for i.MX boards with SPH0645 DMIC
++		  Say Y if you want to add support for DMIC audio.
++
+ config SND_SOC_FSL_SPDIF
+	tristate "Sony/Philips Digital Interface (S/PDIF) module support"
+	select REGMAP_MMIO
+diff --git a/sound/soc/fsl/Makefile b/sound/soc/fsl/Makefile
+index 827d6b0..a4aebe3 100644
+--- a/sound/soc/fsl/Makefile
++++ b/sound/soc/fsl/Makefile
+@@ -22,6 +22,7 @@ snd-soc-fsl-sai-objs := fsl_sai.o fsl_sai_sysfs.o
+ snd-soc-fsl-ssi-y := fsl_ssi.o
+ snd-soc-fsl-ssi-$(CONFIG_DEBUG_FS) += fsl_ssi_dbg.o
+ snd-soc-fsl-spdif-objs := fsl_spdif.o
++snd-soc-imx-sph0645-objs := imx-sph0645.o
+ snd-soc-fsl-esai-objs := fsl_esai.o
+ snd-soc-fsl-dai-objs := fsl_dai.o
+ snd-soc-fsl-micfil-objs := fsl_micfil.o
+@@ -42,6 +43,7 @@ obj-$(CONFIG_SND_SOC_FSL_DSP_AUDIOMIX) += snd-soc-fsl-dsp-audiomix.o
+ obj-$(CONFIG_SND_SOC_FSL_SAI) += snd-soc-fsl-sai.o
+ obj-$(CONFIG_SND_SOC_FSL_SSI) += snd-soc-fsl-ssi.o
+ obj-$(CONFIG_SND_SOC_FSL_SPDIF) += snd-soc-fsl-spdif.o
++obj-$(CONFIG_SND_SOC_IMX_SPH0645) += snd-soc-imx-sph0645.o
+ obj-$(CONFIG_SND_SOC_FSL_ESAI) += snd-soc-fsl-esai.o
+ obj-$(CONFIG_SND_SOC_FSL_DAI) += snd-soc-fsl-dai.o
+ obj-$(CONFIG_SND_SOC_FSL_MICFIL) += snd-soc-fsl-micfil.o
+diff --git a/sound/soc/fsl/fsl_esai.c b/sound/soc/fsl/fsl_esai.c
+index 3bd7ac3..605b6ea 100644
+--- a/sound/soc/fsl/fsl_esai.c
++++ b/sound/soc/fsl/fsl_esai.c
+@@ -19,7 +19,8 @@
+ #define FSL_ESAI_FORMATS	(SNDRV_PCM_FMTBIT_S8 | \
+				SNDRV_PCM_FMTBIT_S16_LE | \
+				SNDRV_PCM_FMTBIT_S20_3LE | \
+-				SNDRV_PCM_FMTBIT_S24_LE)
++				SNDRV_PCM_FMTBIT_S24_LE  | \
++				SNDRV_PCM_FMTBIT_S32_LE)
+
+ /**
+  * fsl_esai_soc_data: soc specific data
+diff --git a/sound/soc/fsl/imx-sph0645.c b/sound/soc/fsl/imx-sph0645.c
+new file mode 100644
+index 00000000..681a4db
+--- /dev/null
++++ b/sound/soc/fsl/imx-sph0645.c
+@@ -0,0 +1,154 @@
++/*
++ * Copyright (C) 2018-2019 Einfochips
++ *
++ * The code contained herein is licensed under the GNU General Public
++ * License. You may obtain a copy of the GNU General Public License
++ * Version 2 or later at the following locations:
++ *
++ * http://www.opensource.org/licenses/gpl-license.html
++ * http://www.gnu.org/copyleft/gpl.html
++ */
++
++#include <linux/module.h>
++#include <linux/of_platform.h>
++#include <sound/soc.h>
++#include <sound/pcm_params.h>
++
++#include "fsl_esai.h"
++
++#define BCLK 	12288000
++
++static int imx_sph0645_hw_params(struct snd_pcm_substream *substream,
++									struct snd_pcm_hw_params *params)
++{
++	struct snd_soc_pcm_runtime *rtd = substream->private_data;
++	struct snd_soc_dai *cpu_dai = rtd->cpu_dai;
++	int ret = 0;
++
++	/* set cpu DAI configuration */
++	ret = snd_soc_dai_set_fmt(cpu_dai, SND_SOC_DAIFMT_I2S | SND_SOC_DAIFMT_NB_NF | SND_SOC_DAIFMT_CBS_CFS);
++	if (ret) {
++		dev_err(cpu_dai->dev, "failed to set dai fmt\n");
++		return ret;
++	}
++
++	ret = snd_soc_dai_set_tdm_slot(cpu_dai, 3, 3, 2, 32);
++	if (ret) {
++		dev_err(cpu_dai->dev, "failed to set dai tdm slot\n");
++		return ret;
++	}
++
++	if (substream->stream == SNDRV_PCM_STREAM_PLAYBACK) {
++		ret = snd_soc_dai_set_sysclk(cpu_dai, ESAI_HCKT_EXTAL, BCLK, SND_SOC_CLOCK_OUT);
++		if (ret){
++			dev_err(cpu_dai->dev, "failed to set cpu sysclk\n");
++			return ret;
++		}
++	}
++	else {
++		ret = snd_soc_dai_set_sysclk(cpu_dai, ESAI_HCKR_EXTAL, BCLK, SND_SOC_CLOCK_OUT);
++		if (ret){
++			dev_err(cpu_dai->dev, "failed to set cpu sysclk\n");
++			return ret;
++		}
++	}
++	return ret;
++
++};
++
++static struct snd_soc_ops imx_sph0645_ops = {
++	.hw_params = imx_sph0645_hw_params,
++};
++
++SND_SOC_DAILINK_DEFS(hifi_fe,
++		DAILINK_COMP_ARRAY(COMP_EMPTY()),
++		DAILINK_COMP_ARRAY(COMP_DUMMY()),
++		DAILINK_COMP_ARRAY(COMP_EMPTY()));
++
++static struct snd_soc_dai_link imx_dai = {
++	.name = "imx-sph0645",
++	.stream_name = "imx-sph0645",
++	.ops = &imx_sph0645_ops,
++	.dai_fmt = SND_SOC_DAIFMT_I2S | SND_SOC_DAIFMT_NB_NF | SND_SOC_DAIFMT_CBS_CFS,
++	.dpcm_capture = 1,
++	.capture_only = 1,
++	SND_SOC_DAILINK_REG(hifi_fe),
++};
++
++static struct snd_soc_card snd_soc_card_imx_3stack = {
++	.name = "imx-audio-sph0645",
++	.dai_link = &imx_dai,
++	.num_links = 1,
++	.owner = THIS_MODULE,
++};
++
++static int imx_sph0645_probe(struct platform_device *pdev)
++{
++	struct snd_soc_card *card = &snd_soc_card_imx_3stack;
++	struct device_node *ssi_np, *np = pdev->dev.of_node;
++	struct platform_device *ssi_pdev;
++	int ret;
++
++	ssi_np = of_parse_phandle(pdev->dev.of_node, "ssi-controller", 0);
++	if (!ssi_np) {
++		dev_err(&pdev->dev, "phandle missing or invalid\n");
++		return -EINVAL;
++	}
++
++	ssi_pdev = of_find_device_by_node(ssi_np);
++	if (!ssi_pdev) {
++		dev_err(&pdev->dev, "failed to find SSI platform device\n");
++		ret = -EINVAL;
++		goto end;
++	}
++
++	card->dev = &pdev->dev;
++	card->dai_link->cpus->dai_name = dev_name(&ssi_pdev->dev);
++	card->dai_link->platforms->of_node = ssi_np;
++
++	platform_set_drvdata(pdev, card);
++
++	ret = snd_soc_register_card(card);
++	if (ret)
++		dev_err(&pdev->dev, "Failed to register card: %d\n", ret);
++
++end:
++	if (ssi_np)
++		of_node_put(ssi_np);
++
++	return ret;
++}
++
++static int imx_sph0645_remove(struct platform_device *pdev)
++{
++	struct snd_soc_card *card = &snd_soc_card_imx_3stack;
++
++	snd_soc_unregister_card(card);
++
++	return 0;
++}
++
++static const struct of_device_id imx_sph0645_dt_ids[] = {
++	{ .compatible = "fsl,imx-audio-sph0645", },
++	{ /* sentinel */ }
++};
++
++MODULE_DEVICE_TABLE(of, imx_sph0645_dt_ids);
++
++static struct platform_driver imx_sph0645_driver = {
++	.driver = {
++	.name = "imx-mic-sph0645",
++	.pm = &snd_soc_pm_ops,
++	.of_match_table = imx_sph0645_dt_ids,
++	},
++	.probe = imx_sph0645_probe,
++	.remove = imx_sph0645_remove,
++};
++
++module_platform_driver(imx_sph0645_driver);
++
++/* Module information */
++MODULE_AUTHOR("Darshak.Patel@einfochips.com");
++MODULE_DESCRIPTION("ALSA SoC i.MX sph0645");
++MODULE_LICENSE("GPL");
++MODULE_ALIAS("platform:imx-mic-sph0645");
+--
+2.7.4

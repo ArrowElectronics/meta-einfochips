@@ -1,0 +1,136 @@
+From 03f7211e52b715e949d52ef30c603547df97ba48 Mon Sep 17 00:00:00 2001
+From: "Darshak.patel" <darshak.patel@einfochips.com>
+Date: Wed, 21 Oct 2020 13:55:28 +0530
+Subject: [PATCH] IMX8 AIML: Enable spdif support
+
+---
+ arch/arm64/boot/dts/freescale/imx8x-aiml-ei.dtsi | 30 +++++++++++++++++++++++-
+ drivers/gpu/drm/bridge/adv7511/adv7511_drv.c     | 26 ++++++++++++++++----
+ 2 files changed, 51 insertions(+), 5 deletions(-)
+
+diff --git a/arch/arm64/boot/dts/freescale/imx8x-aiml-ei.dtsi b/arch/arm64/boot/dts/freescale/imx8x-aiml-ei.dtsi
+index 177ee54..03102ef 100644
+--- a/arch/arm64/boot/dts/freescale/imx8x-aiml-ei.dtsi
++++ b/arch/arm64/boot/dts/freescale/imx8x-aiml-ei.dtsi
+@@ -86,6 +86,13 @@
+		enable-active-high;
+	};
+
++	sound-spdif {
++		compatible = "fsl,imx-audio-spdif";
++		model = "imx-spdif";
++		spdif-controller = <&spdif0>;
++		spdif-out;
++	};
++
+	imx8x_cm4: imx8x_cm4@0 {
+		compatible = "fsl,imx8qxp-cm4";
+		rsc-da = <0x90000000>;
+@@ -446,6 +453,20 @@
+	status = "okay";
+ };
+
++&spdif0 {
++	compatible = "fsl,imx8qm-spdif";
++	pinctrl-names = "default";
++	pinctrl-0 = <&pinctrl_spdif0>;
++	assigned-clocks = <&acm IMX_ADMA_ACM_SPDIF0_TX_CLK_SEL>,
++			<&clk IMX_SC_R_AUDIO_PLL_0 IMX_SC_PM_CLK_PLL>,
++			<&clk IMX_SC_R_AUDIO_PLL_0 IMX_SC_PM_CLK_SLV_BUS>,
++			<&clk IMX_SC_R_AUDIO_PLL_0 IMX_SC_PM_CLK_MST_BUS>,
++			<&spdif0_lpcg 0>;
++	assigned-clock-parents = <&aud_pll_div0_lpcg 0>;
++	assigned-clock-rates = <0>, <786432000>, <49152000>, <24576000>, <49152000>;
++	status = "okay";
++};
++
+ &fec1 {
+	pinctrl-names = "default";
+	pinctrl-0 = <&pinctrl_fec1>;
+@@ -921,7 +942,7 @@
+		fsl,pins = <
+			IMX8QXP_USB_SS3_TC1_LSIO_GPIO4_IO04                0x21
+		>;
+-        };
++	};
+
+	pinctrl_hdmi_int: hdmiint { /*Interrupt HDMI*/
+		fsl,pins = <
+@@ -929,4 +950,11 @@
+		>;
+	};
+
++	pinctrl_spdif0: spdif0grp {
++		fsl,pins = <
++			IMX8QXP_SPDIF0_TX_ADMA_SPDIF0_TX   0xc6000040
++            IMX8QXP_SPDIF0_RX_ADMA_SPDIF0_RX   0xc6000040
++        >;
++	};
++
+ };
+diff --git a/drivers/gpu/drm/bridge/adv7511/adv7511_drv.c b/drivers/gpu/drm/bridge/adv7511/adv7511_drv.c
+index ace7b01..b7136ef 100644
+--- a/drivers/gpu/drm/bridge/adv7511/adv7511_drv.c
++++ b/drivers/gpu/drm/bridge/adv7511/adv7511_drv.c
+@@ -42,15 +42,15 @@ static const struct reg_sequence adv7511_fixed_registers[] = {
+  */
+
+ static const uint8_t adv7511_register_defaults[] = {
+-	0x12, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, /* 00 */
+-	0x00, 0x00, 0x01, 0x0e, 0xbc, 0x18, 0x01, 0x13,
++	0x12, 0x00, 0x18, 0x00, 0x00, 0x00, 0x00, 0x00, /* 00 */
++	0x00, 0x00, 0x51, 0x8e, 0xb8, 0x18, 0x01, 0x13,
+	0x25, 0x37, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, /* 10 */
+	0x46, 0x62, 0x04, 0xa8, 0x00, 0x00, 0x1c, 0x84,
+	0x1c, 0xbf, 0x04, 0xa8, 0x1e, 0x70, 0x02, 0x1e, /* 20 */
+	0x00, 0x00, 0x04, 0xa8, 0x08, 0x12, 0x1b, 0xac,
+	0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, /* 30 */
+	0x00, 0x00, 0x00, 0x80, 0x00, 0x00, 0x00, 0xb0,
+-	0x00, 0x50, 0x90, 0x7e, 0x79, 0x70, 0x00, 0x00, /* 40 */
++	0x00, 0x50, 0x90, 0x7e, 0xff, 0x70, 0x00, 0x00, /* 40 */
+	0x00, 0xa8, 0x80, 0x00, 0x00, 0x00, 0x00, 0x00,
+	0x00, 0x00, 0x02, 0x0d, 0x00, 0x00, 0x00, 0x00, /* 50 */
+	0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+@@ -68,7 +68,7 @@ static const uint8_t adv7511_register_defaults[] = {
+	0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+	0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, /* c0 */
+	0x00, 0x03, 0x00, 0x00, 0x02, 0x00, 0x01, 0x04,
+-	0x30, 0xff, 0x80, 0x80, 0x80, 0x00, 0x00, 0x00, /* d0 */
++	0x30, 0xff, 0x80, 0x80, 0x80, 0x00, 0x48, 0x00, /* d0 */
+	0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x10, 0x01,
+	0x80, 0x75, 0x00, 0x00, 0x60, 0x00, 0x00, 0x00, /* e0 */
+	0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+@@ -697,6 +697,14 @@ adv7511_detect(struct adv7511 *adv7511, struct drm_connector *connector)
+	}
+
+	regmap_write(adv7511->regmap, 0xD6, 0x48);
++	regmap_write(adv7511->regmap, 0x01,0x00);
++	regmap_write(adv7511->regmap, 0x02,0x18);
++	regmap_write(adv7511->regmap, 0x03,0x00);
++	regmap_write(adv7511->regmap, 0x0A,0x51);
++	regmap_write(adv7511->regmap, 0x0B,0x8E);
++	regmap_write(adv7511->regmap, 0x0C,0xB8);
++	regmap_write(adv7511->regmap, 0x44,0xFF);
++	regmap_write(adv7511->regmap_cec, 0x05,0xc8);
+	adv7511->status = status;
+	return status;
+ }
+@@ -1294,6 +1302,16 @@ static int adv7511_probe(struct i2c_client *i2c, const struct i2c_device_id *id)
+	drm_bridge_add(&adv7511->bridge);
+
+	adv7511_audio_init(dev, adv7511);
++	/* spdif audio enable register*/
++	regmap_write(adv7511->regmap, 0x01,0x00);
++	regmap_write(adv7511->regmap, 0x02,0x18);
++	regmap_write(adv7511->regmap, 0x03,0x00);
++	regmap_write(adv7511->regmap, 0x0A,0x51);
++	regmap_write(adv7511->regmap, 0x0B,0x8E);
++	regmap_write(adv7511->regmap, 0x0C,0xB8);
++	regmap_write(adv7511->regmap, 0x44,0xFF);
++	regmap_write(adv7511->regmap_cec, 0x05,0xc8);
++
+	return 0;
+
+ err_unregister_cec:
+--
+2.7.4

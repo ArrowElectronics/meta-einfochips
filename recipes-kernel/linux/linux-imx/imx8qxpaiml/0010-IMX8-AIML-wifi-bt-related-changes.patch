@@ -1,0 +1,125 @@
+From fc6fce1b62641dd61c66041e169e3bf033e5dc95 Mon Sep 17 00:00:00 2001
+From: "Darshak.patel" <darshak.patel@einfochips.com>
+Date: Wed, 4 Nov 2020 13:30:40 +0530
+Subject: [PATCH] IMX8 AIML: wifi-bt related changes
+
+---
+ arch/arm64/boot/dts/freescale/imx8x-aiml-ei.dtsi | 68 ++++++++++++++++++++----
+ 1 file changed, 59 insertions(+), 9 deletions(-)
+
+diff --git a/arch/arm64/boot/dts/freescale/imx8x-aiml-ei.dtsi b/arch/arm64/boot/dts/freescale/imx8x-aiml-ei.dtsi
+index f62376f..e4efe4f 100644
+--- a/arch/arm64/boot/dts/freescale/imx8x-aiml-ei.dtsi
++++ b/arch/arm64/boot/dts/freescale/imx8x-aiml-ei.dtsi
+@@ -86,6 +86,26 @@
+		enable-active-high;
+	};
+
++	bt_reg_on: bt_reg_on {
++		compatible = "regulator-fixed";
++		regulator-name = "BT_REG_ON";
++		regulator-min-microvolt = <3300000>;
++		regulator-max-microvolt = <3300000>;
++		gpio = <&lsio_gpio0 1 GPIO_ACTIVE_HIGH>;
++		enable-active-high;
++		regulator-always-on;
++	};
++
++	wifi_reg_on: wifi_reg_on {
++		compatible = "regulator-fixed";
++		regulator-name = "WIFI_REG_ON";
++		regulator-min-microvolt = <3300000>;
++		regulator-max-microvolt = <3300000>;
++		gpio = <&lsio_gpio3 24 GPIO_ACTIVE_HIGH>;
++		enable-active-high;
++		regulator-always-on;
++	};
++
+	sound-spdif {
+		compatible = "fsl,imx-audio-spdif";
+		model = "imx-spdif";
+@@ -362,7 +382,7 @@
+
+ &lpuart0 {
+	pinctrl-names = "default";
+-	pinctrl-0 = <&pinctrl_lpuart0>;
++	pinctrl-0 = <&pinctrl_lpuart0>, <&pinctrl_bt_gpio>;
+	status = "okay";
+ };
+
+@@ -551,13 +571,14 @@
+
+ &usdhc1 {
+	pinctrl-names = "default", "state_100mhz", "state_200mhz";
+-	pinctrl-0 = <&pinctrl_usdhc1>;
+-	pinctrl-1 = <&pinctrl_usdhc1>;
+-	pinctrl-2 = <&pinctrl_usdhc1>;
+-	bus-width = <8>;
+-	no-sd;
+-	no-sdio;
++	pinctrl-0 = <&pinctrl_usdhc1>, <&pinctrl_wifi_gpio>;
++	pinctrl-1 = <&pinctrl_usdhc1>, <&pinctrl_wifi_gpio>;
++	pinctrl-2 = <&pinctrl_usdhc1>, <&pinctrl_wifi_gpio>;
++	bus-width = <4>;
++	vmmc-supply = <&wifi_reg_on>;
+	non-removable;
++	broken-cd;
++	wifi-host;
+	status = "okay";
+ };
+
+@@ -852,6 +873,8 @@
+		fsl,pins = <
+			IMX8QXP_UART0_RX_ADMA_UART0_RX				0x06000020
+			IMX8QXP_UART0_TX_ADMA_UART0_TX				0x06000020
++			IMX8QXP_FLEXCAN0_TX_ADMA_UART0_CTS_B   		0x06000020
++			IMX8QXP_FLEXCAN0_RX_ADMA_UART0_RTS_B   		0x06000020
+		>;
+	};
+
+@@ -859,8 +882,8 @@
+		fsl,pins = <
+			IMX8QXP_UART1_TX_ADMA_UART1_TX		0x06000020
+			IMX8QXP_UART1_RX_ADMA_UART1_RX		0x06000020
+-			IMX8QXP_UART1_RTS_B_ADMA_UART1_RTS_B	0x06000020
+-			IMX8QXP_UART1_CTS_B_ADMA_UART1_CTS_B	0x06000020
++			IMX8QXP_UART1_RTS_B_ADMA_UART1_RTS_B    0x06000020
++			IMX8QXP_UART1_CTS_B_ADMA_UART1_CTS_B    0x06000020
+		>;
+	};
+
+@@ -969,5 +992,32 @@
+		>;
+	};
+
++	pinctrl_wifi_bt_gpio: wifibtgpio {
++		fsl,pins = <
++			IMX8QXP_MIPI_DSI0_GPIO0_00_LSIO_GPIO1_IO27     0x21
++			IMX8QXP_MIPI_DSI0_GPIO0_01_LSIO_GPIO1_IO28     0x21
++		>;
++	};
++
++	pinctrl_wifi_gpio: wifigpio {
++		fsl,pins = <
++			IMX8QXP_QSPI0B_SS0_B_LSIO_GPIO3_IO23       0x21	/* WIFI Wake to HOST*/
++			IMX8QXP_QSPI0B_SS1_B_LSIO_GPIO3_IO24       0x21	/*WIFI REGULATOR ON */
++		>;
++	};
++
++	pinctrl_bt_gpio: btgpio {
++		fsl,pins = <
++			IMX8QXP_QSPI0B_SCLK_LSIO_GPIO3_IO17        	0x02000061	/* BT DEV Wake UP */
++			IMX8QXP_QSPI0B_DQS_LSIO_GPIO3_IO22			0x02000061	/* BT HOST WAKE */
++			IMX8QXP_ESAI0_FST_LSIO_GPIO0_IO01          	0xc6000040 	/* BT REG */
++		>;
++	};
++
++	pinctrl_rf_sw_ctl_gpio: rfswctlgpio {      /*RF SW CTL Input GPIO*/
++	    fsl,pins = <
++			IMX8QXP_EMMC0_DATA6_LSIO_GPIO4_IO15        0x21
++		>;
++	};
+
+ };
+--
+2.7.4

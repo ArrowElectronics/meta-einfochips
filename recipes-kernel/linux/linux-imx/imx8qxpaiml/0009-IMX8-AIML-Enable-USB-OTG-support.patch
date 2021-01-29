@@ -1,0 +1,37 @@
+From 162d8cb6b71a8c9d821a467fb97fbded8ff470af Mon Sep 17 00:00:00 2001
+From: "Darshak.patel" <darshak.patel@einfochips.com>
+Date: Mon, 26 Oct 2020 18:45:24 +0530
+Subject: [PATCH] IMX8 AIML: Enable USB OTG support
+
+---
+ arch/arm64/boot/dts/freescale/imx8x-aiml-ei.dtsi | 9 +++++++++
+ 1 file changed, 9 insertions(+)
+
+diff --git a/arch/arm64/boot/dts/freescale/imx8x-aiml-ei.dtsi b/arch/arm64/boot/dts/freescale/imx8x-aiml-ei.dtsi
+index d6bc843..f62376f 100644
+--- a/arch/arm64/boot/dts/freescale/imx8x-aiml-ei.dtsi
++++ b/arch/arm64/boot/dts/freescale/imx8x-aiml-ei.dtsi
+@@ -529,6 +529,8 @@
+ };
+
+ &usbotg1 {
++	pinctrl-names = "default";
++	pinctrl-0 = <&pinctrl_usb_otg_pwr_en>;
+	vbus-supply = <&reg_usb_otg1_vbus>;
+	srp-disable;
+	hnp-disable;
+@@ -960,5 +962,12 @@
+             IMX8QXP_SPDIF0_RX_ADMA_SPDIF0_RX   0xc6000040
+         >;
+	};
++
++	pinctrl_usb_otg_pwr_en: usbotgpwren { /* USB OTG */
++		fsl,pins = <
++			IMX8QXP_SCU_GPIO0_00_LSIO_GPIO2_IO03           0x21
++		>;
++	};
++
+
+ };
+--
+2.7.4

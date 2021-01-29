@@ -1,0 +1,234 @@
+From ccea0bd483c93eef052846f07d82c85a1e6c8bbf Mon Sep 17 00:00:00 2001
+From: "darshak.patel" <darshak.patel@einfochips.com>
+Date: Tue, 20 Oct 2020 17:51:54 +0530
+Subject: [PATCH] IMX8 AIML: DSI to HDMI display support
+
+    Add the HPD register value
+    i2cset -y -f 4 0x39 0xD6 0x48
+---
+ .../freescale/imx8qxp-aiml-ei-dsi-rm67191.dts |  7 --
+ .../dts/freescale/imx8x-aiml-ei-rpmsg.dtsi    |  3 -
+ .../boot/dts/freescale/imx8x-aiml-ei.dtsi     | 93 ++++---------------
+ drivers/gpu/drm/bridge/adv7511/adv7511_drv.c  |  2 +
+ 4 files changed, 20 insertions(+), 85 deletions(-)
+
+diff --git a/arch/arm64/boot/dts/freescale/imx8qxp-aiml-ei-dsi-rm67191.dts b/arch/arm64/boot/dts/freescale/imx8qxp-aiml-ei-dsi-rm67191.dts
+index 7dfeb226fbbd..60bd6a931552 100644
+--- a/arch/arm64/boot/dts/freescale/imx8qxp-aiml-ei-dsi-rm67191.dts
++++ b/arch/arm64/boot/dts/freescale/imx8qxp-aiml-ei-dsi-rm67191.dts
+@@ -7,7 +7,6 @@
+
+ #include "imx8qxp-aiml-ei.dts"
+
+-/delete-node/ &adv_bridge0;
+ /delete-node/ &adv_bridge1;
+
+ &ldb1_phy {
+@@ -26,10 +25,6 @@
+	status = "disabled";
+ };
+
+-&lvds_bridge0 {
+-	status = "disabled";
+-};
+-
+ &lvds_bridge1 {
+	status = "disabled";
+ };
+@@ -48,7 +43,6 @@
+
+		compatible = "raydium,rm67191";
+		reg = <0>;
+-		//reset-gpios = <&pca9557_a 6 GPIO_ACTIVE_LOW>;
+		dsi-lanes = <4>;
+		video-mode = <2>;
+		width-mm = <68>;
+@@ -88,7 +82,6 @@
+
+		compatible = "raydium,rm67191";
+		reg = <0>;
+-		//reset-gpios = <&pca9557_b 7 GPIO_ACTIVE_LOW>;
+		dsi-lanes = <4>;
+		video-mode = <2>;
+		width-mm = <68>;
+diff --git a/arch/arm64/boot/dts/freescale/imx8x-aiml-ei-rpmsg.dtsi b/arch/arm64/boot/dts/freescale/imx8x-aiml-ei-rpmsg.dtsi
+index e83c423c1286..90aab799a5bd 100644
+--- a/arch/arm64/boot/dts/freescale/imx8x-aiml-ei-rpmsg.dtsi
++++ b/arch/arm64/boot/dts/freescale/imx8x-aiml-ei-rpmsg.dtsi
+@@ -3,9 +3,6 @@
+  * Copyright 2020 NXP
+  */
+
+-/delete-node/ &cm40_i2c;
+-/delete-node/ &i2c1;
+-
+ &i2c_rpbus_1 {
+	#address-cells = <1>;
+	#size-cells = <0>;
+diff --git a/arch/arm64/boot/dts/freescale/imx8x-aiml-ei.dtsi b/arch/arm64/boot/dts/freescale/imx8x-aiml-ei.dtsi
+index 372f4672d98f..177ee541dd93 100644
+--- a/arch/arm64/boot/dts/freescale/imx8x-aiml-ei.dtsi
++++ b/arch/arm64/boot/dts/freescale/imx8x-aiml-ei.dtsi
+@@ -247,38 +247,6 @@
+	pinctrl-0 = <&pinctrl_i2c0_mipi_lvds0>;
+	clock-frequency = <100000>;
+	status = "okay";
+-
+-	lvds_bridge0: lvds-to-hdmi-bridge@4c {
+-		compatible = "ite,it6263";
+-		reg = <0x4c>;
+-
+-		port {
+-			it6263_0_in: endpoint {
+-				remote-endpoint = <&lvds0_out>;
+-			};
+-		};
+-	};
+-
+-	adv_bridge0: adv7535@3d {
+-		#address-cells = <1>;
+-		#size-cells = <0>;
+-
+-		compatible = "adi,adv7535";
+-		reg = <0x3d>;
+-		adi,addr-cec = <0x3b>;
+-		adi,dsi-lanes = <4>;
+-		adi,dsi-channel = <1>;
+-		interrupt-parent = <&lsio_gpio1>;
+-		interrupts = <28 IRQ_TYPE_LEVEL_LOW>;
+-		status = "okay";
+-
+-		port@0 {
+-			reg = <0>;
+-			adv7535_0_in: endpoint {
+-				remote-endpoint = <&mipi0_adv_out>;
+-			};
+-		};
+-	};
+ };
+
+ &ldb1_phy {
+@@ -288,19 +256,6 @@
+ &ldb1 {
+	status = "okay";
+
+-	lvds-channel@0 {
+-		fsl,data-mapping = "jeida";
+-		fsl,data-width = <24>;
+-		status = "okay";
+-
+-		port@1 {
+-			reg = <1>;
+-
+-			lvds0_out: endpoint {
+-				remote-endpoint = <&it6263_0_in>;
+-			};
+-		};
+-	};
+ };
+
+ &mipi0_dphy {
+@@ -309,24 +264,15 @@
+
+ &mipi0_dsi_host {
+	status = "okay";
+-
+-	ports {
+-		port@1 {
+-			reg = <1>;
+-			mipi0_adv_out: endpoint {
+-				remote-endpoint = <&adv7535_0_in>;
+-			};
+-		};
+-	};
+ };
+
+-&i2c0_mipi_lvds1 {
+-	#address-cells = <1>;
+-	#size-cells = <0>;
+-	pinctrl-names = "default";
+-	pinctrl-0 = <&pinctrl_i2c0_mipi_lvds1>;
+-	clock-frequency = <100000>;
+-	status = "okay";
++&i2c1 {
++        #address-cells = <1>;
++        #size-cells = <0>;
++        clock-frequency = <100000>;
++        pinctrl-names = "default";
++        pinctrl-0 = <&pinctrl_lpi2c1>, <&pinctrl_hdmi_int>;
++        status = "okay";
+
+	lvds_bridge1: lvds-to-hdmi-bridge@4c {
+		compatible = "ite,it6263";
+@@ -339,17 +285,16 @@
+		};
+	};
+
+-	adv_bridge1: adv7535@3d {
++	adv_bridge1: adv7535@39 {
+		#address-cells = <1>;
+		#size-cells = <0>;
+
+		compatible = "adi,adv7535";
+-		reg = <0x3d>;
+-		adi,addr-cec = <0x3b>;
++		reg = <0x39>;
+		adi,dsi-lanes = <4>;
+		adi,dsi-channel = <1>;
+-		interrupt-parent = <&lsio_gpio2>;
+-		interrupts = <0 IRQ_TYPE_LEVEL_LOW>;
++		interrupt-parent = <&lsio_gpio3>;
++		interrupts = <1 IRQ_TYPE_LEVEL_LOW>;
+		status = "okay";
+
+		port@0 {
+@@ -541,15 +486,6 @@
+	};
+ };
+
+-&i2c1 {
+-	#address-cells = <1>;
+-	#size-cells = <0>;
+-	clock-frequency = <100000>;
+-	pinctrl-names = "default";
+-	pinctrl-0 = <&pinctrl_lpi2c1>;
+-	status = "okay";
+-};
+-
+ &rpmsg{
+	/*
+	 * 64K for one rpmsg instance:
+@@ -986,4 +922,11 @@
+			IMX8QXP_USB_SS3_TC1_LSIO_GPIO4_IO04                0x21
+		>;
+         };
++
++	pinctrl_hdmi_int: hdmiint { /*Interrupt HDMI*/
++		fsl,pins = <
++			IMX8QXP_CSI_MCLK_LSIO_GPIO3_IO01                              0xC0000041
++		>;
++	};
++
+ };
+diff --git a/drivers/gpu/drm/bridge/adv7511/adv7511_drv.c b/drivers/gpu/drm/bridge/adv7511/adv7511_drv.c
+index 1877668be1e6..ace7b0169752 100644
+--- a/drivers/gpu/drm/bridge/adv7511/adv7511_drv.c
++++ b/drivers/gpu/drm/bridge/adv7511/adv7511_drv.c
+@@ -432,6 +432,7 @@ static bool adv7511_hpd(struct adv7511 *adv7511)
+	if (irq0 & ADV7511_INT0_HPD) {
+		regmap_write(adv7511->regmap, ADV7511_REG_INT(0),
+			     ADV7511_INT0_HPD);
++		regmap_write(adv7511->regmap, 0xD6, 0x48);
+		return true;
+	}
+
+@@ -695,6 +696,7 @@ adv7511_detect(struct adv7511 *adv7511, struct drm_connector *connector)
+				   ADV7511_REG_POWER2_HPD_SRC_BOTH);
+	}
+
++	regmap_write(adv7511->regmap, 0xD6, 0x48);
+	adv7511->status = status;
+	return status;
+ }
+--
+2.17.1
