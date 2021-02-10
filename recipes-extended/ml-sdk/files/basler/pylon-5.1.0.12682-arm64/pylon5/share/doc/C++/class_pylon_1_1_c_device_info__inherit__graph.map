@@ -1,0 +1,6 @@
+<map id="Pylon::CDeviceInfo" name="Pylon::CDeviceInfo">
+<area shape="rect" id="node4" href="$class_pylon_1_1_c_basler_gig_e_device_info.html" title="Implementation of the GiGE specific device info object. " alt="" coords="5,229,208,256"/>
+<area shape="rect" id="node5" href="$class_pylon_1_1_c_basler_usb_device_info.html" title="PylonUsb specific Device Info object. " alt="" coords="232,229,429,256"/>
+<area shape="rect" id="node2" href="$class_pylon_1_1_c_info_base.html" title="Base implementation for PYLON info container. " alt="" coords="156,80,281,107"/>
+<area shape="rect" id="node3" href="$struct_pylon_1_1_i_properties.html" title="interface for a property container " alt="" coords="155,5,281,32"/>
+</map>

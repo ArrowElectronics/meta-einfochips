@@ -1,0 +1,9 @@
+digraph "Graphical Class Hierarchy"
+{
+  edge [fontname="Helvetica",fontsize="10",labelfontname="Helvetica",labelfontsize="10"];
+  node [fontname="Helvetica",fontsize="10",shape=record];
+  rankdir="LR";
+  Node1 [label="Basler_InstantCameraParams\l::CInstantCameraParams_Params",height=0.2,width=0.4,color="black", fillcolor="white", style="filled",URL="$class_basler___instant_camera_params_1_1_c_instant_camera_params___params.html",tooltip="Interface to instant camera parameters. "];
+  Node1 -> Node2 [dir="back",color="midnightblue",fontsize="10",style="solid",fontname="Helvetica"];
+  Node2 [label="Pylon::CInstantCamera",height=0.2,width=0.4,color="black", fillcolor="white", style="filled",URL="$class_pylon_1_1_c_instant_camera.html",tooltip="Provides convenient access to a camera device. "];
+}

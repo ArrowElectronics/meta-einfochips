@@ -1,0 +1,14 @@
+digraph "Basler_GigECamera::CGigECamera_Params"
+{
+  edge [fontname="Helvetica",fontsize="10",labelfontname="Helvetica",labelfontsize="10"];
+  node [fontname="Helvetica",fontsize="10",shape=record];
+  Node1 [label="Basler_GigECamera::\lCGigECamera_Params",height=0.2,width=0.4,color="black", fillcolor="grey75", style="filled", fontcolor="black"];
+  Node1 -> Node2 [dir="back",color="midnightblue",fontsize="10",style="solid",fontname="Helvetica"];
+  Node2 [label="Pylon::CPylonDeviceProxy\lT\< Basler_GigECamera::\lCGigECamera_Params \>",height=0.2,width=0.4,color="black", fillcolor="white", style="filled",URL="$class_pylon_1_1_c_pylon_device_proxy_t.html"];
+  Node2 -> Node3 [dir="back",color="midnightblue",fontsize="10",style="solid",fontname="Helvetica"];
+  Node3 [label="Pylon::CPylonGigEDeviceProxy\lT\< Basler_GigECamera::CGigECamera\l_Params \>",height=0.2,width=0.4,color="black", fillcolor="white", style="filled",URL="$class_pylon_1_1_c_pylon_gig_e_device_proxy_t.html"];
+  Node3 -> Node4 [dir="back",color="midnightblue",fontsize="10",style="solid",fontname="Helvetica"];
+  Node4 [label="Pylon::CPylonGigECameraT\l\< Basler_GigECamera::CGigECamera\l_Params \>",height=0.2,width=0.4,color="black", fillcolor="white", style="filled",URL="$class_pylon_1_1_c_pylon_gig_e_camera_t.html"];
+  Node4 -> Node5 [dir="back",color="midnightblue",fontsize="10",style="solid",fontname="Helvetica"];
+  Node5 [label="Pylon::CBaslerGigECamera",height=0.2,width=0.4,color="black", fillcolor="white", style="filled",URL="$class_pylon_1_1_c_basler_gig_e_camera.html",tooltip="Low Level API: The camera class for Basler GigE Vision camera devices. "];
+}

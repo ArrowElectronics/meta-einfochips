@@ -1,0 +1,105 @@
+var gCameraNamingScheme = [ 
+    { 
+        seriesid: "acA", 
+        interfaceid: "g",
+        colorid: "m",
+        seriestag: "_ace_GigE",
+        sfnctag: "_SFNC_1",
+        colortag: "_Mono",        
+    }, 
+    { 
+        seriesid: "acA", 
+        interfaceid: "g",
+        colorid: "c",
+        seriestag: "_ace_GigE",
+        sfnctag: "_SFNC_1",
+        colortag: "_Color",
+      }, 
+    { 
+        seriesid: "acA", 
+        interfaceid: "u",
+        colorid: "m", 
+        seriestag: "_ace_USB", 
+        sfnctag: "_SFNC_2",
+        colortag: "_Mono",
+    },    
+    { 
+        seriesid: "acA", 
+        interfaceid: "u",
+        colorid: "c",
+        seriestag: "_ace_USB", 
+        sfnctag: "_SFNC_2",
+        colortag: "_Color",
+    }, 
+    { 
+        seriesid: "daA", 
+        interfaceid: "l",
+        colorid: "c",
+        seriestag: "_dart_LVDS",
+        sfnctag: "_SFNC_2",
+        colortag: "_Color",
+    },
+    { 
+        seriesid: "daA", 
+        interfaceid: "l",
+        colorid: "m", 
+        seriestag: "_dart_LVDS", 
+        sfnctag: "_SFNC_2",
+        colortag: "_Mono",
+    }, 
+    { 
+        seriesid: "daA", 
+        interfaceid: "m",
+        colorid: "m",
+        seriestag: "_dart_MIPI", 
+        sfnctag: "_SFNC_2",
+        colortag: "_Mono",
+    },
+    { 
+        seriesid: "daA", 
+        interfaceid: "m",
+        colorid: "c",
+        seriestag: "_dart_MIPI", 
+        sfnctag: "_SFNC_2",
+        colortag: "_Color",
+    },
+    { 
+        seriesid: "daA", 
+        interfaceid: "u",
+        colorid: "m", 
+        seriestag: "_dart_USB", 
+        sfnctag: "_SFNC_2",
+        colortag: "_Mono",
+    }, 
+    { 
+        seriesid: "daA", 
+        interfaceid: "u",
+        colorid: "c", 
+        seriestag: "_dart_USB", 
+        sfnctag: "_SFNC_2",
+        colortag: "_Color",
+    },    
+    { 
+        seriesid: "puA", 
+        interfaceid: "u",
+        colorid: "m",
+        seriestag: "_pulse_USB", 
+        sfnctag: "_SFNC_2",
+        colortag: "_Mono",
+    },
+    { 
+        seriesid: "puA", 
+        interfaceid: "u",
+        colorid: "c",
+        seriestag: "_pulse_USB", 
+        sfnctag: "_SFNC_2",
+        colortag: "_Color",
+    }
+];
+var gLanguageStrings = {
+    en_US: {
+        showAllEnable: "Show all camera models",
+        showAllDisable: "Show only your camera model",
+        topicFooter: "<p>Suggestions for improving the documentation? Send us your <a id='mailFeedback'>feedback on this topic</a>.</p><p>For technical questions, please contact your <a href='https://www.baslerweb.com/en/sales/'>local distributor</a> or use the <a class='external-link' href='http://www.baslerweb.com/en/support/contact' target='_blank'>support form</a> on the Basler website.</p>"
+    }    
+};

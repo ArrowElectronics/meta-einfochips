@@ -1,0 +1,50 @@
+<map id="GenApi::IBase" name="GenApi::IBase">
+<area shape="rect" id="node2" href="$struct_gen_api_1_1_i_node.html" title="Interface common to all nodes. " alt="" coords="169,984,277,1011"/>
+<area shape="rect" id="node3" href="$struct_gen_api_1_1_i_port.html" title="Interface for ports. " alt="" coords="172,1035,273,1061"/>
+<area shape="rect" id="node4" href="$struct_gen_api_1_1_i_selector.html" title="Interface for groups of features selected by a single one. " alt="" coords="160,1085,285,1112"/>
+<area shape="rect" id="node5" href="$struct_gen_api_1_1_i_value.html" title="Interface for value properties. " alt="" coords="167,1136,278,1163"/>
+<area shape="rect" id="node6" href="$struct_gen_api_1_1_i_boolean.html" title="Interface for Boolean properties. " alt="" coords="347,933,471,960"/>
+<area shape="rect" id="node7" href="$struct_gen_api_1_1_i_category.html" title="Gives access to a category node. " alt="" coords="344,984,475,1011"/>
+<area shape="rect" id="node8" href="$struct_gen_api_1_1_i_command.html" title="GenApi::ICommand" alt="" coords="341,1035,478,1061"/>
+<area shape="rect" id="node9" href="$struct_gen_api_1_1_i_enum_entry.html" title="Interface of single enum value. " alt="" coords="338,1085,481,1112"/>
+<area shape="rect" id="node10" href="$struct_gen_api_1_1_i_enumeration.html" title="Interface for enumeration properties. " alt="" coords="334,1136,485,1163"/>
+<area shape="rect" id="node46" href="$struct_gen_api_1_1_i_float.html" title="Interface for float properties. " alt="" coords="356,1187,463,1213"/>
+<area shape="rect" id="node47" href="$struct_gen_api_1_1_i_integer.html" title="Interface for integer properties. " alt="" coords="351,1237,468,1264"/>
+<area shape="rect" id="node48" href="$struct_gen_api_1_1_i_register.html" title="Interface for registers. " alt="" coords="346,1288,473,1315"/>
+<area shape="rect" id="node49" href="$struct_gen_api_1_1_i_string.html" title="Interface for string properties. " alt="" coords="354,1339,465,1365"/>
+<area shape="rect" id="node11" href="$struct_gen_api_1_1_i_enumeration_t.html" title="Interface for enumeration properties. " alt="" coords="574,5,733,46"/>
+<area shape="rect" id="node12" href="$struct_gen_api_1_1_i_enumeration_t.html" title="GenApi::IEnumerationT\l\&lt; AccessModeEnums \&gt;" alt="" coords="572,70,735,111"/>
+<area shape="rect" id="node13" href="$struct_gen_api_1_1_i_enumeration_t.html" title="GenApi::IEnumerationT\l\&lt; AcquisitionModeEnums \&gt;" alt="" coords="562,135,745,177"/>
+<area shape="rect" id="node14" href="$struct_gen_api_1_1_i_enumeration_t.html" title="GenApi::IEnumerationT\l\&lt; AcquisitionStatusSelector\lEnums \&gt;" alt="" coords="561,200,745,256"/>
+<area shape="rect" id="node15" href="$struct_gen_api_1_1_i_enumeration_t.html" title="GenApi::IEnumerationT\l\&lt; AutoFunctionAOISelectorEnums \&gt;" alt="" coords="536,279,771,321"/>
+<area shape="rect" id="node16" href="$struct_gen_api_1_1_i_enumeration_t.html" title="GenApi::IEnumerationT\l\&lt; AutoFunctionProfileEnums \&gt;" alt="" coords="553,345,754,386"/>
+<area shape="rect" id="node17" href="$struct_gen_api_1_1_i_enumeration_t.html" title="GenApi::IEnumerationT\l\&lt; AutoFunctionROISelectorEnums \&gt;" alt="" coords="535,410,771,451"/>
+<area shape="rect" id="node18" href="$struct_gen_api_1_1_i_enumeration_t.html" title="GenApi::IEnumerationT\l\&lt; BalanceRatioSelectorEnums \&gt;" alt="" coords="547,475,760,517"/>
+<area shape="rect" id="node19" href="$struct_gen_api_1_1_i_enumeration_t.html" title="GenApi::IEnumerationT\l\&lt; BalanceWhiteAutoEnums \&gt;" alt="" coords="556,541,751,582"/>
+<area shape="rect" id="node20" href="$struct_gen_api_1_1_i_enumeration_t.html" title="GenApi::IEnumerationT\l\&lt; BinningHorizontalModeEnums \&gt;" alt="" coords="543,606,764,647"/>
+<area shape="rect" id="node21" href="$struct_gen_api_1_1_i_enumeration_t.html" title="GenApi::IEnumerationT\l\&lt; BinningModeHorizontalEnums \&gt;" alt="" coords="543,671,764,713"/>
+<area shape="rect" id="node22" href="$struct_gen_api_1_1_i_enumeration_t.html" title="GenApi::IEnumerationT\l\&lt; BinningModeVerticalEnums \&gt;" alt="" coords="550,737,757,778"/>
+<area shape="rect" id="node23" href="$struct_gen_api_1_1_i_enumeration_t.html" title="GenApi::IEnumerationT\l\&lt; BinningVerticalModeEnums \&gt;" alt="" coords="550,802,757,843"/>
+<area shape="rect" id="node24" href="$struct_gen_api_1_1_i_enumeration_t.html" title="GenApi::IEnumerationT\l\&lt; BlackLevelSelectorEnums \&gt;" alt="" coords="554,867,753,909"/>
+<area shape="rect" id="node25" href="$struct_gen_api_1_1_i_enumeration_t.html" title="GenApi::IEnumerationT\l\&lt; BslColorSpaceModeEnums \&gt;" alt="" coords="550,933,757,974"/>
+<area shape="rect" id="node26" href="$struct_gen_api_1_1_i_enumeration_t.html" title="GenApi::IEnumerationT\l\&lt; BslContrastModeEnums \&gt;" alt="" coords="559,998,747,1039"/>
+<area shape="rect" id="node27" href="$struct_gen_api_1_1_i_enumeration_t.html" title="GenApi::IEnumerationT\l\&lt; BslImmediateTriggerModeEnums \&gt;" alt="" coords="534,1063,773,1105"/>
+<area shape="rect" id="node28" href="$struct_gen_api_1_1_i_enumeration_t.html" title="GenApi::IEnumerationT\l\&lt; BslUSBSpeedModeEnums \&gt;" alt="" coords="552,1129,755,1170"/>
+<area shape="rect" id="node29" href="$struct_gen_api_1_1_i_enumeration_t.html" title="GenApi::IEnumerationT\l\&lt; ChunkCounterSelectorEnums \&gt;" alt="" coords="544,1194,763,1235"/>
+<area shape="rect" id="node30" href="$struct_gen_api_1_1_i_enumeration_t.html" title="GenApi::IEnumerationT\l\&lt; ChunkGainSelectorEnums \&gt;" alt="" coords="553,1259,753,1301"/>
+<area shape="rect" id="node31" href="$struct_gen_api_1_1_i_enumeration_t.html" title="GenApi::IEnumerationT\l\&lt; ChunkPixelFormatEnums \&gt;" alt="" coords="556,1325,751,1366"/>
+<area shape="rect" id="node32" href="$struct_gen_api_1_1_i_enumeration_t.html" title="GenApi::IEnumerationT\l\&lt; ChunkSelectorEnums \&gt;" alt="" coords="567,1390,740,1431"/>
+<area shape="rect" id="node33" href="$struct_gen_api_1_1_i_enumeration_t.html" title="GenApi::IEnumerationT\l\&lt; ColorAdjustmentSelectorEnums \&gt;" alt="" coords="537,1455,769,1497"/>
+<area shape="rect" id="node34" href="$struct_gen_api_1_1_i_enumeration_t.html" title="GenApi::IEnumerationT\l\&lt; ColorOverexposureCompensation\lAOISelectorEnums \&gt;" alt="" coords="538,1520,769,1576"/>
+<area shape="rect" id="node35" href="$struct_gen_api_1_1_i_enumeration_t.html" title="GenApi::IEnumerationT\l\&lt; ColorSpaceEnums \&gt;" alt="" coords="574,1599,733,1641"/>
+<area shape="rect" id="node36" href="$struct_gen_api_1_1_i_enumeration_t.html" title="GenApi::IEnumerationT\l\&lt; ColorTransformationSelector\lEnums \&gt;" alt="" coords="553,1664,753,1720"/>
+<area shape="rect" id="node37" href="$struct_gen_api_1_1_i_enumeration_t.html" title="GenApi::IEnumerationT\l\&lt; ColorTransformationValueSelector\lEnums \&gt;" alt="" coords="537,1744,770,1800"/>
+<area shape="rect" id="node38" href="$struct_gen_api_1_1_i_enumeration_t.html" title="GenApi::IEnumerationT\l\&lt; CompressionModeEnums \&gt;" alt="" coords="555,1823,751,1865"/>
+<area shape="rect" id="node39" href="$struct_gen_api_1_1_i_enumeration_t.html" title="GenApi::IEnumerationT\l\&lt; CounterEventSourceEnums \&gt;" alt="" coords="549,1889,757,1930"/>
+<area shape="rect" id="node40" href="$struct_gen_api_1_1_i_enumeration_t.html" title="GenApi::IEnumerationT\l\&lt; CounterResetActivationEnums \&gt;" alt="" coords="540,1954,767,1995"/>
+<area shape="rect" id="node41" href="$struct_gen_api_1_1_i_enumeration_t.html" title="GenApi::IEnumerationT\l\&lt; CounterResetSourceEnums \&gt;" alt="" coords="549,2019,758,2061"/>
+<area shape="rect" id="node42" href="$struct_gen_api_1_1_i_enumeration_t.html" title="GenApi::IEnumerationT\l\&lt; CounterSelectorEnums \&gt;" alt="" coords="563,2085,744,2126"/>
+<area shape="rect" id="node43" href="$struct_gen_api_1_1_i_enumeration_t.html" title="GenApi::IEnumerationT\l\&lt; DefaultSetSelectorEnums \&gt;" alt="" coords="555,2150,752,2191"/>
+<area shape="rect" id="node44" href="$struct_gen_api_1_1_i_enumeration_t.html" title="GenApi::IEnumerationT\l\&lt; DefectPixelCorrectionMode\lEnums \&gt;" alt="" coords="556,2215,751,2271"/>
+<area shape="rect" id="node45" href="$struct_gen_api_1_1_i_enumeration_t.html" title="GenApi::IEnumerationT\l\&lt; DemosaicingModeEnums \&gt;" alt="" coords="556,2294,751,2335"/>
+</map>

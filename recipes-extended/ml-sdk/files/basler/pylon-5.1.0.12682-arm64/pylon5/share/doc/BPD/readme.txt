@@ -1,0 +1,1 @@
+Please extract all files before clicking on start.htm.
