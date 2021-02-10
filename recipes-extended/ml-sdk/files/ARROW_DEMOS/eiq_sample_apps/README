@@ -1,0 +1,25 @@
+eIQ Sample Apps
+===============
+
+This repository includes the source codes for some demo applications to get started
+with the eIQ Toolkit. For more informations on the demos please check:
+https://community.nxp.com/docs/DOC-343785
+
+Available Applications
+======================
+
+* Arm NN inference engine:
+Handwritten Digit Recognition
+Object Recognition using camera or file input
+
+* OpenCV DNN inference engine:
+Object Recognition using camera or file input
+
+* TensorFlow Lite:
+Face Recognition
+
+Branches
+========
+
+* master: master branch
+* techdays_hands-on: branch for Tech Days eIQ Hands-on.
