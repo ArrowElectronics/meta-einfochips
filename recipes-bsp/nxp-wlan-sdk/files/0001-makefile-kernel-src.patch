@@ -1,0 +1,44 @@
+diff -Naurw ./mwifiex_8997/Makefile ../git/mwifiex_8997/Makefile
+--- ./mwifiex_8997/Makefile	2021-03-03 14:03:30.608640799 +0100
++++ ../git/mwifiex_8997/Makefile	2021-03-03 14:13:34.313060124 +0100
+@@ -18,7 +18,7 @@
+ # ARE EXPRESSLY DISCLAIMED.  The License provides additional details about
+ # this warranty disclaimer.
+ 
+-COMPATDIR=/lib/modules/$(KERNELVERSION_X86)/build/compat-wireless-3.2-rc1-1/include
++COMPATDIR=$(KERNEL_SRC)/compat-wireless-3.2-rc1-1/include
+ ifeq ($(CC),)
+ CC=		$(CROSS_COMPILE)gcc -I$(COMPATDIR)
+ endif
+@@ -117,8 +117,7 @@
+ 
+ 
+ 
+-KERNELVERSION_X86 := 	$(shell uname -r)
+-KERNELDIR ?= /lib/modules/$(KERNELVERSION_X86)/build
++KERNELDIR ?= $(KERNEL_SRC)
+ LD += -S
+ 
+ BINDIR = ../bin_pcie8997
+diff -Naurw ./mxm_wifiex/wlan_src/Makefile ../git/mxm_wifiex/wlan_src/Makefile
+--- ./mxm_wifiex/wlan_src/Makefile	2021-03-03 14:03:30.616640380 +0100
++++ ../git/mxm_wifiex/wlan_src/Makefile	2021-03-03 14:12:24.984681504 +0100
+@@ -16,7 +16,7 @@
+ #  this warranty disclaimer.
+ #
+ 
+-COMPATDIR=/lib/modules/$(KERNELVERSION_X86)/build/compat-wireless-3.2-rc1-1/include
++COMPATDIR=$(KERNEL_SRC)/compat-wireless-3.2-rc1-1/include
+ ifeq ($(CC),)
+ CC=		$(CROSS_COMPILE)gcc -I$(COMPATDIR)
+ endif
+@@ -112,8 +112,7 @@
+ 
+ ccflags-y += -DLINUX
+ 
+-KERNELVERSION_X86 := 	$(shell uname -r)
+-KERNELDIR ?= /lib/modules/$(KERNELVERSION_X86)/build
++KERNELDIR ?= $(KERNEL_SRC)
+ LD += -S
+ 
+ BINDIR = ../bin_mxm_wifiex
