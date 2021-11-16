@@ -1,27 +1,29 @@
-From 3bb0f4931a83baf33cf5394fd61671ceeb34d14c Mon Sep 17 00:00:00 2001
-From: "darshak.patel" <darshak.patel@einfochips.com>
-Date: Mon, 21 Dec 2020 10:46:42 +0530
+From 95dbafa6e3c67d5e8f0cc7af8915c8ef8538aa73 Mon Sep 17 00:00:00 2001
+From: Tejas Patel <tejas.patel1@einfochips.com>
+Date: Thu, 21 Oct 2021 10:28:46 +0530
 Subject: [PATCH] Add thor96 board dtb support
 
+Signed-off-by: Tejas Patel <tejas.patel1@einfochips.com>
 ---
  iMX8M/soc.mak | 4 ++--
  1 file changed, 2 insertions(+), 2 deletions(-)
 
 diff --git a/iMX8M/soc.mak b/iMX8M/soc.mak
-index b7b3986..d1ffe3e 100644
+index 4bfdc37..361247d 100644
 --- a/iMX8M/soc.mak
 +++ b/iMX8M/soc.mak
-@@ -133,9 +133,9 @@ u-boot-atf-tee.bin: u-boot.bin bl31.bin tee.bin
+@@ -139,9 +139,9 @@ u-boot-atf-tee.bin: u-boot.bin bl31.bin tee.bin
  clean:
-	@rm -f $(MKIMG) u-boot-atf.bin u-boot-atf-tee.bin u-boot-spl-ddr.bin u-boot.itb u-boot.its u-boot-ddr3l.itb u-boot-ddr3l.its u-boot-spl-ddr3l.bin u-boot-ddr4.itb u-boot-ddr4.its u-boot-spl-ddr4.bin u-boot-ddr4-evk.itb u-boot-ivt.itb u-boot-ddr4-evk.its $(OUTIMG)
-
--dtbs = evk.dtb
-+dtbs = thor96.dtb
- $(dtbs):
--	./$(DTB_PREPROC) $(PLAT)-evk.dtb $(dtbs)
-+	./$(DTB_PREPROC) $(PLAT)-thor96.dtb $(dtbs)
-
- u-boot.itb: $(dtbs)
-	./$(PAD_IMAGE) tee.bin
---
+ 	@rm -f $(MKIMG) u-boot-atf.bin u-boot-atf-tee.bin u-boot-spl-ddr.bin u-boot.itb u-boot.its u-boot-ddr3l.itb u-boot-ddr3l.its u-boot-spl-ddr3l.bin u-boot-ddr4.itb u-boot-ddr4.its u-boot-spl-ddr4.bin u-boot-ddr4-evk.itb u-boot-ivt.itb u-boot-ddr4-evk.its $(OUTIMG)
+ 
+-dtb = evk.dtb
++dtb = thor96.dtb
+ $(dtb):
+-	./$(DTB_PREPROC) $(PLAT)-evk.dtb $(dtb) $(dtbs)
++	./$(DTB_PREPROC) $(PLAT)-thor96.dtb $(dtb) $(dtbs)
+ 
+ u-boot.itb: $(dtb)
+ 	./$(PAD_IMAGE) tee.bin
+-- 
 2.17.1
+

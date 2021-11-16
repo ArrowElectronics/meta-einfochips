@@ -1,43 +1,44 @@
-From 3afcd9637d70001d35d1579ef66071d4339f8563 Mon Sep 17 00:00:00 2001
-From: "darshak.patel" <darshak.patel@einfochips.com>
-Date: Fri, 18 Dec 2020 11:59:53 +0530
-Subject: [PATCH 3/5] IMX8 THOR96: SD card configuration
+From c1fac12a8f32f05697603ec04ba976f3e7919e81 Mon Sep 17 00:00:00 2001
+From: Tejas Patel <tejas.patel1@einfochips.com>
+Date: Mon, 18 Oct 2021 18:59:09 +0530
+Subject: [PATCH 3/6] IMX8 THOR96: SD card configuration
 
+Signed-off-by: Tejas Patel <tejas.patel1@einfochips.com>
 ---
  arch/arm/dts/imx8mq-thor96.dts | 29 ++++-------------------------
  1 file changed, 4 insertions(+), 25 deletions(-)
 
 diff --git a/arch/arm/dts/imx8mq-thor96.dts b/arch/arm/dts/imx8mq-thor96.dts
-index 9e6c5a7ce7..f8461c5f9d 100644
+index 4ef9b4612c..20ffa35bd5 100644
 --- a/arch/arm/dts/imx8mq-thor96.dts
 +++ b/arch/arm/dts/imx8mq-thor96.dts
 @@ -328,12 +328,8 @@
-	pinctrl-0 = <&pinctrl_usdhc1>;
-	pinctrl-1 = <&pinctrl_usdhc1_100mhz>;
-	pinctrl-2 = <&pinctrl_usdhc1_200mhz>;
+ 	pinctrl-0 = <&pinctrl_usdhc1>;
+ 	pinctrl-1 = <&pinctrl_usdhc1_100mhz>;
+ 	pinctrl-2 = <&pinctrl_usdhc1_200mhz>;
 -	vqmmc-supply = <&sw4_reg>;
 -	bus-width = <8>;
 +	bus-width = <4>;
-	non-removable;
+ 	non-removable;
 -	no-sd;
 -	no-sdio;
 -	mmc-hs400-1_8v;
-	status = "okay";
+ 	status = "okay";
  };
-
+ 
 @@ -344,8 +340,6 @@
-	pinctrl-2 = <&pinctrl_usdhc2_200mhz>;
-	cd-gpios = <&gpio2 12 GPIO_ACTIVE_LOW>;
-	vmmc-supply = <&reg_usdhc2_vmmc>;
+ 	pinctrl-2 = <&pinctrl_usdhc2_200mhz>;
+ 	cd-gpios = <&gpio2 12 GPIO_ACTIVE_LOW>;
+ 	vmmc-supply = <&reg_usdhc2_vmmc>;
 -	sd-uhs-sdr104;
 -	sd-uhs-ddr50;
-	status = "okay";
+ 	status = "okay";
  };
-
+ 
 @@ -513,12 +507,7 @@
-			MX8MQ_IOMUXC_SD1_DATA1_USDHC1_DATA1		0xc3
-			MX8MQ_IOMUXC_SD1_DATA2_USDHC1_DATA2		0xc3
-			MX8MQ_IOMUXC_SD1_DATA3_USDHC1_DATA3		0xc3
+ 			MX8MQ_IOMUXC_SD1_DATA1_USDHC1_DATA1		0xc3
+ 			MX8MQ_IOMUXC_SD1_DATA2_USDHC1_DATA2		0xc3
+ 			MX8MQ_IOMUXC_SD1_DATA3_USDHC1_DATA3		0xc3
 -			MX8MQ_IOMUXC_SD1_DATA4_USDHC1_DATA4		0xc3
 -			MX8MQ_IOMUXC_SD1_DATA5_USDHC1_DATA5		0xc3
 -			MX8MQ_IOMUXC_SD1_DATA6_USDHC1_DATA6		0xc3
@@ -45,13 +46,13 @@ index 9e6c5a7ce7..f8461c5f9d 100644
 -			MX8MQ_IOMUXC_SD1_STROBE_USDHC1_STROBE		0x83
 -			MX8MQ_IOMUXC_SD1_RESET_B_USDHC1_RESET_B		0xc1
 +			MX8MQ_IOMUXC_GPIO1_IO00_ANAMIX_REF_CLK_32K      0x85
-		>;
-	};
-
+ 		>;
+ 	};
+ 
 @@ -530,12 +519,7 @@
-			MX8MQ_IOMUXC_SD1_DATA1_USDHC1_DATA1		0xcd
-			MX8MQ_IOMUXC_SD1_DATA2_USDHC1_DATA2		0xcd
-			MX8MQ_IOMUXC_SD1_DATA3_USDHC1_DATA3		0xcd
+ 			MX8MQ_IOMUXC_SD1_DATA1_USDHC1_DATA1		0xcd
+ 			MX8MQ_IOMUXC_SD1_DATA2_USDHC1_DATA2		0xcd
+ 			MX8MQ_IOMUXC_SD1_DATA3_USDHC1_DATA3		0xcd
 -			MX8MQ_IOMUXC_SD1_DATA4_USDHC1_DATA4		0xcd
 -			MX8MQ_IOMUXC_SD1_DATA5_USDHC1_DATA5		0xcd
 -			MX8MQ_IOMUXC_SD1_DATA6_USDHC1_DATA6		0xcd
@@ -59,13 +60,13 @@ index 9e6c5a7ce7..f8461c5f9d 100644
 -			MX8MQ_IOMUXC_SD1_STROBE_USDHC1_STROBE		0x8d
 -			MX8MQ_IOMUXC_SD1_RESET_B_USDHC1_RESET_B		0xc1
 +			MX8MQ_IOMUXC_GPIO1_IO00_ANAMIX_REF_CLK_32K      0x85
-		>;
-	};
-
+ 		>;
+ 	};
+ 
 @@ -547,12 +531,7 @@
-			MX8MQ_IOMUXC_SD1_DATA1_USDHC1_DATA1		0xdf
-			MX8MQ_IOMUXC_SD1_DATA2_USDHC1_DATA2		0xdf
-			MX8MQ_IOMUXC_SD1_DATA3_USDHC1_DATA3		0xdf
+ 			MX8MQ_IOMUXC_SD1_DATA1_USDHC1_DATA1		0xdf
+ 			MX8MQ_IOMUXC_SD1_DATA2_USDHC1_DATA2		0xdf
+ 			MX8MQ_IOMUXC_SD1_DATA3_USDHC1_DATA3		0xdf
 -			MX8MQ_IOMUXC_SD1_DATA4_USDHC1_DATA4		0xdf
 -			MX8MQ_IOMUXC_SD1_DATA5_USDHC1_DATA5		0xdf
 -			MX8MQ_IOMUXC_SD1_DATA6_USDHC1_DATA6		0xdf
@@ -73,8 +74,9 @@ index 9e6c5a7ce7..f8461c5f9d 100644
 -			MX8MQ_IOMUXC_SD1_STROBE_USDHC1_STROBE		0x9f
 -			MX8MQ_IOMUXC_SD1_RESET_B_USDHC1_RESET_B		0xc1
 +			MX8MQ_IOMUXC_GPIO1_IO00_ANAMIX_REF_CLK_32K      0x85
-		>;
-	};
-
---
+ 		>;
+ 	};
+ 
+-- 
 2.17.1
+

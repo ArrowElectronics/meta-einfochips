@@ -1,8 +1,9 @@
-From d3f3589852c0e87f8290de627b6603f8cfec7957 Mon Sep 17 00:00:00 2001
-From: "darshak.patel" <darshak.patel@einfochips.com>
-Date: Fri, 18 Dec 2020 11:47:04 +0530
-Subject: [PATCH 1/5] IMX8 THOR96: Add support for iMX8MQ THOR96 board
+From 183f208344eef26bfa9006eafe8c0bbc39b5e8fb Mon Sep 17 00:00:00 2001
+From: Tejas Patel <tejas.patel1@einfochips.com>
+Date: Mon, 18 Oct 2021 18:57:27 +0530
+Subject: [PATCH 1/6] IMX8 THOR96: Add support for iMX8MQ THOR96 board
 
+Signed-off-by: Tejas Patel <tejas.patel1@einfochips.com>
 ---
  arch/arm/dts/Makefile                         |    1 +
  arch/arm/dts/imx8mq-thor96.dts                |  606 ++++++++
@@ -11,13 +12,13 @@ Subject: [PATCH 1/5] IMX8 THOR96: Add support for iMX8MQ THOR96 board
  board/freescale/imx8mq_thor96/MAINTAINERS     |    6 +
  board/freescale/imx8mq_thor96/Makefile        |   12 +
  board/freescale/imx8mq_thor96/README          |   37 +
- board/freescale/imx8mq_thor96/imx8mq_thor96.c |  292 ++++
+ board/freescale/imx8mq_thor96/imx8mq_thor96.c |  291 ++++
  board/freescale/imx8mq_thor96/lpddr4_timing.c | 1324 +++++++++++++++++
  .../imx8mq_thor96/lpddr4_timing_b0.c          | 1191 +++++++++++++++
- board/freescale/imx8mq_thor96/spl.c           |  264 ++++
- configs/imx8mq_thor96_defconfig               |  132 ++
- include/configs/imx8mq_thor96.h               |  244 +++
- 13 files changed, 4129 insertions(+)
+ board/freescale/imx8mq_thor96/spl.c           |  257 ++++
+ configs/imx8mq_thor96_defconfig               |  136 ++
+ include/configs/imx8mq_thor96.h               |  237 +++
+ 13 files changed, 4118 insertions(+)
  create mode 100644 arch/arm/dts/imx8mq-thor96.dts
  create mode 100644 board/freescale/imx8mq_thor96/Kconfig
  create mode 100644 board/freescale/imx8mq_thor96/MAINTAINERS
@@ -31,20 +32,20 @@ Subject: [PATCH 1/5] IMX8 THOR96: Add support for iMX8MQ THOR96 board
  create mode 100644 include/configs/imx8mq_thor96.h
 
 diff --git a/arch/arm/dts/Makefile b/arch/arm/dts/Makefile
-index 81ac2569c6..093c0d3b94 100644
+index 585ebc6c11..2b9cb9c441 100644
 --- a/arch/arm/dts/Makefile
 +++ b/arch/arm/dts/Makefile
-@@ -792,6 +792,7 @@ dtb-$(CONFIG_ARCH_IMX8M) += \
-	imx8mq-ddr3l-val.dtb \
-	imx8mq-ddr4-val.dtb \
-	imx8mq-evk.dtb \
+@@ -876,6 +876,7 @@ dtb-$(CONFIG_ARCH_IMX8M) += \
+ 	imx8mq-phanbell.dtb \
+ 	imx8mp-ddr4-evk.dtb \
+ 	imx8mp-evk.dtb \
 +	imx8mq-thor96.dtb \
-	imx8mp-evk.dtb \
-	imx8mm-ddr4-ab2.dtb \
-	imx8mm-ab2.dtb \
+ 	imx8mp-phyboard-pollux-rdk.dtb \
+ 	imx8mq-pico-pi.dtb \
+ 	imx8mm-ddr4-ab2.dtb \
 diff --git a/arch/arm/dts/imx8mq-thor96.dts b/arch/arm/dts/imx8mq-thor96.dts
 new file mode 100644
-index 0000000000..842e75ac44
+index 0000000000..f82c7d95f6
 --- /dev/null
 +++ b/arch/arm/dts/imx8mq-thor96.dts
 @@ -0,0 +1,606 @@
@@ -655,24 +656,24 @@ index 0000000000..842e75ac44
 +	};
 +};
 diff --git a/arch/arm/mach-imx/imx8m/Kconfig b/arch/arm/mach-imx/imx8m/Kconfig
-index 450cecb675..2517fd2172 100644
+index 245b085499..0a3f5f1f06 100644
 --- a/arch/arm/mach-imx/imx8m/Kconfig
 +++ b/arch/arm/mach-imx/imx8m/Kconfig
-@@ -55,6 +55,11 @@ config TARGET_IMX8MQ_EVK
-	select IMX8MQ
-	select IMX8M_LPDDR4
-
+@@ -72,6 +72,11 @@ config TARGET_IMX8MQ_PHANBELL
+         select IMX8MQ
+         select IMX8M_LPDDR4
+ 
 +config TARGET_IMX8MQ_THOR96
 +	bool "imx8mq_thor96"
 +	select IMX8MQ
 +	select IMX8M_LPDDR4
 +
  config TARGET_IMX8MQ_DDR3L_VAL
-	bool "imx8mq_ddr3l_val"
-	select IMX8MQ
-@@ -139,6 +144,7 @@ config TARGET_VERDIN_IMX8MM
+ 	bool "imx8mq_ddr3l_val"
+ 	select IMX8MQ
+@@ -262,6 +267,7 @@ config TARGET_PHYCORE_IMX8MP
  endchoice
-
+ 
  source "board/freescale/imx8mq_evk/Kconfig"
 +source "board/freescale/imx8mq_thor96/Kconfig"
  source "board/freescale/imx8mq_val/Kconfig"
@@ -773,10 +774,10 @@ index 0000000000..859f852255
 +Set Boot switch SW801: 1100 and Bmode: 10 to boot from Micro SD.
 diff --git a/board/freescale/imx8mq_thor96/imx8mq_thor96.c b/board/freescale/imx8mq_thor96/imx8mq_thor96.c
 new file mode 100644
-index 0000000000..28a27dfff6
+index 0000000000..64bcbdfe1f
 --- /dev/null
 +++ b/board/freescale/imx8mq_thor96/imx8mq_thor96.c
-@@ -0,0 +1,292 @@
+@@ -0,0 +1,291 @@
 +// SPDX-License-Identifier: GPL-2.0+
 +/*
 + * Copyright 2018 NXP
@@ -1068,7 +1069,6 @@ index 0000000000..28a27dfff6
 +	return (bool)(!!(readl(SNVS_HPSR) & (0x1 << 6)));
 +}
 +#endif
-+
 diff --git a/board/freescale/imx8mq_thor96/lpddr4_timing.c b/board/freescale/imx8mq_thor96/lpddr4_timing.c
 new file mode 100644
 index 0000000000..46bc7f8591
@@ -3598,10 +3598,10 @@ index 0000000000..ec68edaf69
 +};
 diff --git a/board/freescale/imx8mq_thor96/spl.c b/board/freescale/imx8mq_thor96/spl.c
 new file mode 100644
-index 0000000000..bb8211dd7c
+index 0000000000..2898fec032
 --- /dev/null
 +++ b/board/freescale/imx8mq_thor96/spl.c
-@@ -0,0 +1,264 @@
+@@ -0,0 +1,257 @@
 +// SPDX-License-Identifier: GPL-2.0+
 +/*
 + * Copyright 2018 NXP
@@ -3612,6 +3612,7 @@ index 0000000000..bb8211dd7c
 +#include <common.h>
 +#include <cpu_func.h>
 +#include <hang.h>
++#include <init.h>
 +#include <asm/io.h>
 +#include <errno.h>
 +#include <asm/io.h>
@@ -3624,6 +3625,7 @@ index 0000000000..bb8211dd7c
 +#include <asm/mach-imx/mxc_i2c.h>
 +#include <fsl_esdhc_imx.h>
 +#include <mmc.h>
++#include <linux/delay.h>
 +#include <power/pmic.h>
 +#include <power/pfuze100_pmic.h>
 +#include <spl.h>
@@ -3712,7 +3714,7 @@ index 0000000000..bb8211dd7c
 +	{USDHC2_BASE_ADDR, 0, 4},
 +};
 +
-+int board_mmc_init(bd_t *bis)
++int board_mmc_init(struct bd_info *bis)
 +{
 +	int i, ret;
 +	/*
@@ -3857,21 +3859,12 @@ index 0000000000..bb8211dd7c
 +
 +	board_init_r(NULL, 0);
 +}
-+
-+int do_reset(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
-+{
-+	puts ("resetting ...\n");
-+
-+	reset_cpu(WDOG1_BASE_ADDR);
-+
-+	return 0;
-+}
 diff --git a/configs/imx8mq_thor96_defconfig b/configs/imx8mq_thor96_defconfig
 new file mode 100644
-index 0000000000..06904a61b1
+index 0000000000..d5fd1c283a
 --- /dev/null
 +++ b/configs/imx8mq_thor96_defconfig
-@@ -0,0 +1,132 @@
+@@ -0,0 +1,136 @@
 +CONFIG_ARM=y
 +CONFIG_SPL_SYS_ICACHE_OFF=y
 +CONFIG_SPL_SYS_DCACHE_OFF=y
@@ -3881,6 +3874,8 @@ index 0000000000..06904a61b1
 +CONFIG_SPL_LIBCOMMON_SUPPORT=y
 +CONFIG_SPL_LIBGENERIC_SUPPORT=y
 +CONFIG_SYS_MALLOC_F_LEN=0x2000
++CONFIG_SYS_MEMTEST_START=0x40000000
++CONFIG_SYS_MEMTEST_END=0x80000000
 +CONFIG_SYS_I2C_MXC_I2C1=y
 +CONFIG_SYS_I2C_MXC_I2C2=y
 +CONFIG_SYS_I2C_MXC_I2C3=y
@@ -3930,9 +3925,11 @@ index 0000000000..06904a61b1
 +CONFIG_CMD_SF=y
 +CONFIG_OF_CONTROL=y
 +CONFIG_DEFAULT_DEVICE_TREE="imx8mq-thor96"
++CONFIG_ENV_OVERWRITE=y
 +CONFIG_ENV_IS_IN_MMC=y
 +CONFIG_SAVED_DRAM_TIMING_BASE=0x40000000
 +CONFIG_SYS_RELOC_GD_ENV_ADDR=y
++CONFIG_SYS_MMC_ENV_DEV=1
 +CONFIG_ENV_VARS_UBOOT_RUNTIME_CONFIG=y
 +CONFIG_MXC_GPIO=y
 +CONFIG_DM_I2C=y
@@ -4006,10 +4003,10 @@ index 0000000000..06904a61b1
 +CONFIG_SYS_WHITE_ON_BLACK=y
 diff --git a/include/configs/imx8mq_thor96.h b/include/configs/imx8mq_thor96.h
 new file mode 100644
-index 0000000000..c0686930f1
+index 0000000000..36a91548c1
 --- /dev/null
 +++ b/include/configs/imx8mq_thor96.h
-@@ -0,0 +1,244 @@
+@@ -0,0 +1,237 @@
 +/* SPDX-License-Identifier: GPL-2.0+ */
 +/*
 + * Copyright 2018 NXP
@@ -4170,8 +4167,6 @@ index 0000000000..c0686930f1
 +#define CONFIG_SYS_INIT_SP_ADDR \
 +	(CONFIG_SYS_INIT_RAM_ADDR + CONFIG_SYS_INIT_SP_OFFSET)
 +
-+#define CONFIG_ENV_OVERWRITE
-+#define CONFIG_SYS_MMC_ENV_DEV		1   /* USDHC2 */
 +#define CONFIG_MMCROOT			"/dev/mmcblk1p2"  /* USDHC2 */
 +
 +/* Size of malloc() pool */
@@ -4179,11 +4174,7 @@ index 0000000000..c0686930f1
 +
 +#define CONFIG_SYS_SDRAM_BASE           0x40000000
 +#define PHYS_SDRAM                      0x40000000
-+#define PHYS_SDRAM_SIZE			0xC0000000 /* 3GB DDR */
-+
-+#define CONFIG_SYS_MEMTEST_START	PHYS_SDRAM
-+#define CONFIG_SYS_MEMTEST_END		(CONFIG_SYS_MEMTEST_START + \
-+					(PHYS_SDRAM_SIZE >> 1))
++#define PHYS_SDRAM_SIZE			0x80000000 /* 2GB DDR */
 +
 +#define CONFIG_MXC_UART_BASE		UART1_BASE_ADDR
 +
@@ -4203,7 +4194,6 @@ index 0000000000..c0686930f1
 +#define CONFIG_SYS_MMC_IMG_LOAD_PART	1
 +
 +#ifdef CONFIG_FSL_QSPI
-+#define CONFIG_SYS_FSL_QSPI_AHB
 +#define FSL_QSPI_FLASH_SIZE		(SZ_32M)
 +#define FSL_QSPI_FLASH_NUM		1
 +#endif
@@ -4254,5 +4244,6 @@ index 0000000000..c0686930f1
 +#endif
 +
 +#endif
---
+-- 
 2.17.1
+

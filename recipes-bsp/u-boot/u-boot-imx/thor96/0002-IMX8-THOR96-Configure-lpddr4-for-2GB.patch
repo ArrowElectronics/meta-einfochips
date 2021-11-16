@@ -1,29 +1,29 @@
-From 9cb692106ad4fb78b2bf37ae047a0c2a9cc2928f Mon Sep 17 00:00:00 2001
-From: "darshak.patel" <darshak.patel@einfochips.com>
-Date: Fri, 18 Dec 2020 11:51:43 +0530
-Subject: [PATCH 2/5] IMX8 THOR96: Configure lpddr4 for 2GB
+From 4d0493d29e02c9f29392dfe10fbf95a739f3b019 Mon Sep 17 00:00:00 2001
+From: Tejas Patel <tejas.patel1@einfochips.com>
+Date: Mon, 18 Oct 2021 18:58:13 +0530
+Subject: [PATCH 2/6] IMX8 THOR96: Configure lpddr4 for 2GB
 
+Signed-off-by: Tejas Patel <tejas.patel1@einfochips.com>
 ---
  arch/arm/dts/imx8mq-thor96.dts                |    2 +-
- board/freescale/imx8mq_thor96/lpddr4_timing.c | 1610 +++++++++++------
- include/configs/imx8mq_thor96.h               |    2 +-
- 3 files changed, 1077 insertions(+), 537 deletions(-)
+ board/freescale/imx8mq_thor96/lpddr4_timing.c | 1609 +++++++++++------
+ 2 files changed, 1075 insertions(+), 536 deletions(-)
 
 diff --git a/arch/arm/dts/imx8mq-thor96.dts b/arch/arm/dts/imx8mq-thor96.dts
-index 842e75ac44..9e6c5a7ce7 100644
+index f82c7d95f6..4ef9b4612c 100644
 --- a/arch/arm/dts/imx8mq-thor96.dts
 +++ b/arch/arm/dts/imx8mq-thor96.dts
 @@ -26,7 +26,7 @@
-
-	memory@40000000 {
-		device_type = "memory";
+ 
+ 	memory@40000000 {
+ 		device_type = "memory";
 -		reg = <0x00000000 0x40000000 0 0xc0000000>;
 +		reg = <0x00000000 0x40000000 0 0x80000000>;
-	};
-
-	pcie0_refclk: pcie0-refclk {
+ 	};
+ 
+ 	pcie0_refclk: pcie0-refclk {
 diff --git a/board/freescale/imx8mq_thor96/lpddr4_timing.c b/board/freescale/imx8mq_thor96/lpddr4_timing.c
-index 46bc7f8591..9b12bc0ec6 100644
+index 46bc7f8591..d8e9ce63eb 100644
 --- a/board/freescale/imx8mq_thor96/lpddr4_timing.c
 +++ b/board/freescale/imx8mq_thor96/lpddr4_timing.c
 @@ -1,6 +1,11 @@
@@ -38,12 +38,12 @@ index 46bc7f8591..9b12bc0ec6 100644
 + * Align with uboot version:
 + * imx_v2018.03_4.14.78_1.0.0_ga ~ imx_v2018.04_4.19.35_1.1.0_ga
   */
-
+ 
  #include <linux/kernel.h>
 @@ -8,141 +13,155 @@
  #include <asm/arch/ddr.h>
  #include <asm/arch/lpddr4_define.h>
-
+ 
 -#define WR_POST_EXT_3200	/* recommened to define */
 -
 -struct dram_cfg_param lpddr4_ddrc_cfg[] = {
@@ -282,7 +282,7 @@ index 46bc7f8591..9b12bc0ec6 100644
 +	{ 0x3d40049c, 0xe00 },
 +	{ 0x3d4004a0, 0xffff },
  };
-
+ 
  /* PHY Initialize Configuration */
 -struct dram_cfg_param lpddr4_ddrphy_cfg[] = {
 -	{ 0x20110, 0x02 },
@@ -325,50 +325,50 @@ index 46bc7f8591..9b12bc0ec6 100644
 +	{ 0x130a5, 0x5 },
 +	{ 0x130a6, 0x6 },
 +	{ 0x130a7, 0x7 },
-	{ 0x1005f, 0x1ff },
-	{ 0x1015f, 0x1ff },
-	{ 0x1105f, 0x1ff },
+ 	{ 0x1005f, 0x1ff },
+ 	{ 0x1015f, 0x1ff },
+ 	{ 0x1105f, 0x1ff },
 @@ -151,7 +170,6 @@ struct dram_cfg_param lpddr4_ddrphy_cfg[] = {
-	{ 0x1215f, 0x1ff },
-	{ 0x1305f, 0x1ff },
-	{ 0x1315f, 0x1ff },
+ 	{ 0x1215f, 0x1ff },
+ 	{ 0x1305f, 0x1ff },
+ 	{ 0x1315f, 0x1ff },
 -
-	{ 0x11005f, 0x1ff },
-	{ 0x11015f, 0x1ff },
-	{ 0x11105f, 0x1ff },
+ 	{ 0x11005f, 0x1ff },
+ 	{ 0x11015f, 0x1ff },
+ 	{ 0x11105f, 0x1ff },
 @@ -160,7 +178,6 @@ struct dram_cfg_param lpddr4_ddrphy_cfg[] = {
-	{ 0x11215f, 0x1ff },
-	{ 0x11305f, 0x1ff },
-	{ 0x11315f, 0x1ff },
+ 	{ 0x11215f, 0x1ff },
+ 	{ 0x11305f, 0x1ff },
+ 	{ 0x11315f, 0x1ff },
 -
-	{ 0x21005f, 0x1ff },
-	{ 0x21015f, 0x1ff },
-	{ 0x21105f, 0x1ff },
+ 	{ 0x21005f, 0x1ff },
+ 	{ 0x21015f, 0x1ff },
+ 	{ 0x21105f, 0x1ff },
 @@ -169,7 +186,6 @@ struct dram_cfg_param lpddr4_ddrphy_cfg[] = {
-	{ 0x21215f, 0x1ff },
-	{ 0x21305f, 0x1ff },
-	{ 0x21315f, 0x1ff },
+ 	{ 0x21215f, 0x1ff },
+ 	{ 0x21305f, 0x1ff },
+ 	{ 0x21315f, 0x1ff },
 -
-	{ 0x55, 0x1ff },
-	{ 0x1055, 0x1ff },
-	{ 0x2055, 0x1ff },
+ 	{ 0x55, 0x1ff },
+ 	{ 0x1055, 0x1ff },
+ 	{ 0x2055, 0x1ff },
 @@ -180,32 +196,24 @@ struct dram_cfg_param lpddr4_ddrphy_cfg[] = {
-	{ 0x7055, 0x1ff },
-	{ 0x8055, 0x1ff },
-	{ 0x9055, 0x1ff },
+ 	{ 0x7055, 0x1ff },
+ 	{ 0x8055, 0x1ff },
+ 	{ 0x9055, 0x1ff },
 -
 -	{ 0x200c5, 0x19 },
 +	{ 0x200c5, 0xa },
-	{ 0x1200c5, 0x7 },
-	{ 0x2200c5, 0x7 },
+ 	{ 0x1200c5, 0x7 },
+ 	{ 0x2200c5, 0x7 },
 -
-	{ 0x2002e, 0x2 },
-	{ 0x12002e, 0x2 },
-	{ 0x22002e, 0x2 },
+ 	{ 0x2002e, 0x2 },
+ 	{ 0x12002e, 0x2 },
+ 	{ 0x22002e, 0x2 },
 -
-	{ 0x90204, 0x0 },
-	{ 0x190204, 0x0 },
-	{ 0x290204, 0x0 },
+ 	{ 0x90204, 0x0 },
+ 	{ 0x190204, 0x0 },
+ 	{ 0x290204, 0x0 },
 -
 -#ifdef WR_POST_EXT_3200
 -	{ 0x20024, 0xeb },
@@ -376,25 +376,25 @@ index 46bc7f8591..9b12bc0ec6 100644
 -	{ 0x20024, 0xab },
 -#endif
 +	{ 0x20024, 0x1ab },
-	{ 0x2003a, 0x0 },
+ 	{ 0x2003a, 0x0 },
 -	{ 0x120024, 0xab },
 +	{ 0x120024, 0x1ab },
-	{ 0x2003a, 0x0 },
+ 	{ 0x2003a, 0x0 },
 -	{ 0x220024, 0xab },
 +	{ 0x220024, 0x1ab },
-	{ 0x2003a, 0x0 },
-	{ 0x20056, 0x3 },
+ 	{ 0x2003a, 0x0 },
+ 	{ 0x20056, 0x3 },
 -	{ 0x120056, 0xa },
 -	{ 0x220056, 0xa },
 +	{ 0x120056, 0x3 },
 +	{ 0x220056, 0x3 },
-	{ 0x1004d, 0xe00 },
-	{ 0x1014d, 0xe00 },
-	{ 0x1104d, 0xe00 },
+ 	{ 0x1004d, 0xe00 },
+ 	{ 0x1014d, 0xe00 },
+ 	{ 0x1104d, 0xe00 },
 @@ -230,51 +238,48 @@ struct dram_cfg_param lpddr4_ddrphy_cfg[] = {
-	{ 0x21214d, 0xe00 },
-	{ 0x21304d, 0xe00 },
-	{ 0x21314d, 0xe00 },
+ 	{ 0x21214d, 0xe00 },
+ 	{ 0x21304d, 0xe00 },
+ 	{ 0x21314d, 0xe00 },
 -
 -	{ 0x10049, 0xfbe },
 -	{ 0x10149, 0xfbe },
@@ -466,48 +466,48 @@ index 46bc7f8591..9b12bc0ec6 100644
 +	{ 0x7043, 0x63 },
 +	{ 0x8043, 0x63 },
 +	{ 0x9043, 0x63 },
-	{ 0x20018, 0x3 },
-	{ 0x20075, 0x4 },
-	{ 0x20050, 0x0 },
+ 	{ 0x20018, 0x3 },
+ 	{ 0x20075, 0x4 },
+ 	{ 0x20050, 0x0 },
 -	{ 0x20008, 0x320 },
 +	{ 0x20008, 0x258 },
-	{ 0x120008, 0x64 },
-	{ 0x220008, 0x19 },
-	{ 0x20088, 0x9 },
+ 	{ 0x120008, 0x64 },
+ 	{ 0x220008, 0x19 },
+ 	{ 0x20088, 0x9 },
 -	{ 0x200b2, 0x104 },
 +	{ 0x200b2, 0xdc },
-	{ 0x10043, 0x5a1 },
-	{ 0x10143, 0x5a1 },
-	{ 0x11043, 0x5a1 },
+ 	{ 0x10043, 0x5a1 },
+ 	{ 0x10143, 0x5a1 },
+ 	{ 0x11043, 0x5a1 },
 @@ -283,7 +288,7 @@ struct dram_cfg_param lpddr4_ddrphy_cfg[] = {
-	{ 0x12143, 0x5a1 },
-	{ 0x13043, 0x5a1 },
-	{ 0x13143, 0x5a1 },
+ 	{ 0x12143, 0x5a1 },
+ 	{ 0x13043, 0x5a1 },
+ 	{ 0x13143, 0x5a1 },
 -	{ 0x1200b2, 0x104 },
 +	{ 0x1200b2, 0xdc },
-	{ 0x110043, 0x5a1 },
-	{ 0x110143, 0x5a1 },
-	{ 0x111043, 0x5a1 },
+ 	{ 0x110043, 0x5a1 },
+ 	{ 0x110143, 0x5a1 },
+ 	{ 0x111043, 0x5a1 },
 @@ -292,7 +297,7 @@ struct dram_cfg_param lpddr4_ddrphy_cfg[] = {
-	{ 0x112143, 0x5a1 },
-	{ 0x113043, 0x5a1 },
-	{ 0x113143, 0x5a1 },
+ 	{ 0x112143, 0x5a1 },
+ 	{ 0x113043, 0x5a1 },
+ 	{ 0x113143, 0x5a1 },
 -	{ 0x2200b2, 0x104 },
 +	{ 0x2200b2, 0xdc },
-	{ 0x210043, 0x5a1 },
-	{ 0x210143, 0x5a1 },
-	{ 0x211043, 0x5a1 },
+ 	{ 0x210043, 0x5a1 },
+ 	{ 0x210143, 0x5a1 },
+ 	{ 0x211043, 0x5a1 },
 @@ -319,376 +324,904 @@ struct dram_cfg_param lpddr4_ddrphy_cfg[] = {
-	{ 0x2002d, 0x0 },
-	{ 0x12002d, 0x0 },
-	{ 0x22002d, 0x0 },
+ 	{ 0x2002d, 0x0 },
+ 	{ 0x12002d, 0x0 },
+ 	{ 0x22002d, 0x0 },
 -
-	{ 0x200c7, 0x80 },
-	{ 0x1200c7, 0x80 },
-	{ 0x2200c7, 0x80 },
-	{ 0x200ca, 0x106 },
-	{ 0x1200ca, 0x106 },
-	{ 0x2200ca, 0x106 },
+ 	{ 0x200c7, 0x80 },
+ 	{ 0x1200c7, 0x80 },
+ 	{ 0x2200c7, 0x80 },
+ 	{ 0x200ca, 0x106 },
+ 	{ 0x1200ca, 0x106 },
+ 	{ 0x2200ca, 0x106 },
 +	{ 0x20110, 0x2 },
 +	{ 0x20111, 0x3 },
 +	{ 0x20112, 0x4 },
@@ -515,7 +515,7 @@ index 46bc7f8591..9b12bc0ec6 100644
 +	{ 0x20114, 0x0 },
 +	{ 0x20115, 0x1 },
  };
-
+ 
 +/* ddr phy trained csr */
 +struct dram_cfg_param ddr_ddrphy_trained_csr[] = {
 +	{ 0x200b2, 0x0 },
@@ -1241,23 +1241,23 @@ index 46bc7f8591..9b12bc0ec6 100644
  /* P0 message block paremeter for training firmware */
 -struct dram_cfg_param lpddr4_fsp0_cfg[] = {
 +struct dram_cfg_param ddr_fsp0_cfg[] = {
-	{ 0xd0000, 0x0 },
+ 	{ 0xd0000, 0x0 },
 -	{ 0x54000, 0x0 },
 -	{ 0x54001, 0x0 },
 -	{ 0x54002, 0x0 },
 -	{ 0x54003, 0xc80 },
 +	{ 0x54003, 0x960 },
-	{ 0x54004, 0x2 },
+ 	{ 0x54004, 0x2 },
 -	{ 0x54005, ((LPDDR4_PHY_RON << 8) | LPDDR4_PHY_RTT) }, /* PHY Ron/Rtt */
 -	{ 0x54006, LPDDR4_PHY_VREF_VALUE },
 -	{ 0x54007, 0x0 },
 +	{ 0x54005, 0x2228 },
 +	{ 0x54006, 0x11 },
-	{ 0x54008, 0x131f },
+ 	{ 0x54008, 0x131f },
 -	{ 0x54009, LPDDR4_HDT_CTL_3200_1D },
 -	{ 0x5400a, 0x0 },
 +	{ 0x54009, 0xc8 },
-	{ 0x5400b, 0x2 },
+ 	{ 0x5400b, 0x2 },
 -	{ 0x5400c, 0x0 },
 -	{ 0x5400d, (LPDDR4_CATRAIN_3200_1d << 8) },
 -	{ 0x5400e, 0x0 },
@@ -1312,7 +1312,7 @@ index 46bc7f8591..9b12bc0ec6 100644
 +	{ 0x54021, 0x4a66 },
 +	{ 0x54022, 0x4a08 },
 +	{ 0x54024, 0x16 },
-	{ 0x5402b, 0x1000 },
+ 	{ 0x5402b, 0x1000 },
 -	{ 0x5402c, 0x3 },
 -	{ 0x5402d, 0x0 },
 -	{ 0x5402e, 0x0 },
@@ -1370,19 +1370,19 @@ index 46bc7f8591..9b12bc0ec6 100644
 +	{ 0x5403b, 0x84a },
 +	{ 0x5403c, 0x4a },
 +	{ 0x5403d, 0x1600 },
-	{ 0xd0000, 0x1 },
+ 	{ 0xd0000, 0x1 },
  };
-
+ 
 +
  /* P1 message block paremeter for training firmware */
 -struct dram_cfg_param lpddr4_fsp1_cfg[] = {
 +struct dram_cfg_param ddr_fsp1_cfg[] = {
-	{ 0xd0000, 0x0 },
+ 	{ 0xd0000, 0x0 },
 -	{ 0x54000, 0x0 },
 -	{ 0x54001, 0x0 },
-	{ 0x54002, 0x101 },
-	{ 0x54003, 0x190 },
-	{ 0x54004, 0x2 },
+ 	{ 0x54002, 0x101 },
+ 	{ 0x54003, 0x190 },
+ 	{ 0x54004, 0x2 },
 -	/* PHY Ron/Rtt */
 -	{ 0x54005, ((LPDDR4_PHY_RON << 8) | LPDDR4_PHY_RTT)/*0x2828*/ },
 -	{ 0x54006, LPDDR4_PHY_VREF_VALUE },
@@ -1394,7 +1394,7 @@ index 46bc7f8591..9b12bc0ec6 100644
 +	{ 0x54006, 0x11 },
 +	{ 0x54008, 0x121f },
 +	{ 0x54009, 0xc8 },
-	{ 0x5400b, 0x2 },
+ 	{ 0x5400b, 0x2 },
 -	{ 0x5400c, 0x0 },
 -	{ 0x5400d, (LPDDR4_CATRAIN_400 << 8) },
 -	{ 0x5400e, 0x0 },
@@ -1409,7 +1409,7 @@ index 46bc7f8591..9b12bc0ec6 100644
 -	{ 0x54017, 0x0 },
 -	{ 0x54018, 0x0 },
 +	{ 0x54012, 0x110 },
-	{ 0x54019, 0x84 },
+ 	{ 0x54019, 0x84 },
 -	/* MR4/MR3 */
 -	{ 0x5401a, (((LPDDR4_RON) << 3) | 0x1)/*0x31*/ },
 -	/* MR12/MR11 */
@@ -1423,7 +1423,7 @@ index 46bc7f8591..9b12bc0ec6 100644
 +	{ 0x5401b, 0x4a66 },
 +	{ 0x5401c, 0x4a08 },
 +	{ 0x5401e, 0x16 },
-	{ 0x5401f, 0x84 },
+ 	{ 0x5401f, 0x84 },
 -	{ 0x54020, (((LPDDR4_RON) << 3) | 0x1)/*0x31*/ }, /* MR4/MR3 */
 -	{ 0x54021, ((LPDDR4_VREF_VALUE_CA << 8) | (LPDDR4_RTT_CA << 4) |
 -		    LPDDR4_RTT_DQ)/*0x4d46*/ },/* MR12/MR11 */
@@ -1441,7 +1441,7 @@ index 46bc7f8591..9b12bc0ec6 100644
 +	{ 0x54021, 0x4a66 },
 +	{ 0x54022, 0x4a08 },
 +	{ 0x54024, 0x16 },
-	{ 0x5402b, 0x1000 },
+ 	{ 0x5402b, 0x1000 },
 -	{ 0x5402c, 0x3 },
 -	{ 0x5402d, 0x0 },
 -	{ 0x5402e, 0x0 },
@@ -1449,7 +1449,7 @@ index 46bc7f8591..9b12bc0ec6 100644
 -	{ 0x54030, 0x0 },
 -	{ 0x54031, 0x0 },
 +	{ 0x5402c, 0x1 },
-	{ 0x54032, 0x8400 },
+ 	{ 0x54032, 0x8400 },
 -	{ 0x54033, ((((LPDDR4_RON) << 3) | 0x1) << 8) | 0x00 },
 -	{ 0x54034, (((LPDDR4_RTT_CA << 4) | LPDDR4_RTT_DQ) << 8) },
 -	{ 0x54035, (0x0800 | LPDDR4_VREF_VALUE_CA) },
@@ -1460,7 +1460,7 @@ index 46bc7f8591..9b12bc0ec6 100644
 +	{ 0x54035, 0x84a },
 +	{ 0x54036, 0x4a },
 +	{ 0x54037, 0x1600 },
-	{ 0x54038, 0x8400 },
+ 	{ 0x54038, 0x8400 },
 -	{ 0x54039, ((((LPDDR4_RON) << 3) | 0x1) << 8) | 0x00 },
 -	{ 0x5403a, (((LPDDR4_RTT_CA << 4) | LPDDR4_RTT_DQ) << 8) },
 -	{ 0x5403b, (0x0800 | LPDDR4_VREF_VALUE_CA) },
@@ -1478,19 +1478,19 @@ index 46bc7f8591..9b12bc0ec6 100644
 +	{ 0x5403b, 0x84a },
 +	{ 0x5403c, 0x4a },
 +	{ 0x5403d, 0x1600 },
-	{ 0xd0000, 0x1 },
+ 	{ 0xd0000, 0x1 },
  };
-
+ 
 +
  /* P2 message block paremeter for training firmware */
 -struct dram_cfg_param lpddr4_fsp2_cfg[] = {
 +struct dram_cfg_param ddr_fsp2_cfg[] = {
-	{ 0xd0000, 0x0 },
+ 	{ 0xd0000, 0x0 },
 -	{ 0x54000, 0x0 },
 -	{ 0x54001, 0x0 },
-	{ 0x54002, 0x102 },
-	{ 0x54003, 0x64 },
-	{ 0x54004, 0x2 },
+ 	{ 0x54002, 0x102 },
+ 	{ 0x54003, 0x64 },
+ 	{ 0x54004, 0x2 },
 -	{ 0x54005, ((LPDDR4_PHY_RON << 8) | LPDDR4_PHY_RTT) },
 -	{ 0x54006, LPDDR4_PHY_VREF_VALUE },
 -	{ 0x54007, 0x0 },
@@ -1501,7 +1501,7 @@ index 46bc7f8591..9b12bc0ec6 100644
 +	{ 0x54006, 0x11 },
 +	{ 0x54008, 0x121f },
 +	{ 0x54009, 0xc8 },
-	{ 0x5400b, 0x2 },
+ 	{ 0x5400b, 0x2 },
 -	{ 0x5400c, 0x0 },
 -	{ 0x5400d, (LPDDR4_CATRAIN_100 << 8) },
 -	{ 0x5400e, 0x0 },
@@ -1516,7 +1516,7 @@ index 46bc7f8591..9b12bc0ec6 100644
 -	{ 0x54017, 0x0 },
 -	{ 0x54018, 0x0 },
 +	{ 0x54012, 0x110 },
-	{ 0x54019, 0x84 },
+ 	{ 0x54019, 0x84 },
 -	{ 0x5401a, (((LPDDR4_RON) << 3) | 0x1) },
 -	{ 0x5401b, ((LPDDR4_VREF_VALUE_CA << 8) | (LPDDR4_RTT_CA << 4) |
 -		    LPDDR4_RTT_DQ) },
@@ -1527,7 +1527,7 @@ index 46bc7f8591..9b12bc0ec6 100644
 +	{ 0x5401b, 0x4a66 },
 +	{ 0x5401c, 0x4a08 },
 +	{ 0x5401e, 0x16 },
-	{ 0x5401f, 0x84 },
+ 	{ 0x5401f, 0x84 },
 -	{ 0x54020, (((LPDDR4_RON) << 3) | 0x1) },
 -	{ 0x54021, ((LPDDR4_VREF_VALUE_CA << 8) | (LPDDR4_RTT_CA << 4) |
 -		    LPDDR4_RTT_DQ) },
@@ -1544,7 +1544,7 @@ index 46bc7f8591..9b12bc0ec6 100644
 +	{ 0x54021, 0x4a66 },
 +	{ 0x54022, 0x4a08 },
 +	{ 0x54024, 0x16 },
-	{ 0x5402b, 0x1000 },
+ 	{ 0x5402b, 0x1000 },
 -	{ 0x5402c, 0x3 },
 -	{ 0x5402d, 0x0 },
 -	{ 0x5402e, 0x0 },
@@ -1552,7 +1552,7 @@ index 46bc7f8591..9b12bc0ec6 100644
 -	{ 0x54030, 0x0 },
 -	{ 0x54031, 0x0 },
 +	{ 0x5402c, 0x1 },
-	{ 0x54032, 0x8400 },
+ 	{ 0x54032, 0x8400 },
 -	{ 0x54033, ((((LPDDR4_RON) << 3) | 0x1) << 8) | 0x00 },
 -	{ 0x54034, (((LPDDR4_RTT_CA << 4) | LPDDR4_RTT_DQ) << 8) },
 -	{ 0x54035, (0x0800 | LPDDR4_VREF_VALUE_CA) },
@@ -1563,7 +1563,7 @@ index 46bc7f8591..9b12bc0ec6 100644
 +	{ 0x54035, 0x84a },
 +	{ 0x54036, 0x4a },
 +	{ 0x54037, 0x1600 },
-	{ 0x54038, 0x8400 },
+ 	{ 0x54038, 0x8400 },
 -	{ 0x54039, ((((LPDDR4_RON) << 3) | 0x1) << 8) | 0x00 },
 -	{ 0x5403a, (((LPDDR4_RTT_CA << 4) | LPDDR4_RTT_DQ) << 8) },
 -	{ 0x5403b, (0x0800 | LPDDR4_VREF_VALUE_CA) },
@@ -1581,30 +1581,30 @@ index 46bc7f8591..9b12bc0ec6 100644
 +	{ 0x5403b, 0x84a },
 +	{ 0x5403c, 0x4a },
 +	{ 0x5403d, 0x1600 },
-	{ 0xd0000, 0x1 },
+ 	{ 0xd0000, 0x1 },
  };
-
+ 
 +
  /* P0 2D message block paremeter for training firmware */
 -struct dram_cfg_param lpddr4_fsp0_2d_cfg[] = {
 +struct dram_cfg_param ddr_fsp0_2d_cfg[] = {
-	{ 0xd0000, 0x0 },
+ 	{ 0xd0000, 0x0 },
 -	{ 0x54000, 0x0 },
 -	{ 0x54001, 0x0 },
 -	{ 0x54002, 0x0 },
 -	{ 0x54003, 0xc80 },
 +	{ 0x54003, 0x960 },
-	{ 0x54004, 0x2 },
+ 	{ 0x54004, 0x2 },
 -	{ 0x54005, ((LPDDR4_PHY_RON << 8) | LPDDR4_PHY_RTT) },
 -	{ 0x54006, LPDDR4_PHY_VREF_VALUE },
 -	{ 0x54007, 0x0 },
 +	{ 0x54005, 0x2228 },
 +	{ 0x54006, 0x11 },
-	{ 0x54008, 0x61 },
+ 	{ 0x54008, 0x61 },
 -	{ 0x54009, LPDDR4_HDT_CTL_2D },
 -	{ 0x5400a, 0x0 },
 +	{ 0x54009, 0xc8 },
-	{ 0x5400b, 0x2 },
+ 	{ 0x5400b, 0x2 },
 -	{ 0x5400c, 0x0 },
 -	{ 0x5400d, (LPDDR4_CATRAIN_3200_2d << 8) },
 -	{ 0x5400e, 0x0 },
@@ -1660,7 +1660,7 @@ index 46bc7f8591..9b12bc0ec6 100644
 +	{ 0x54021, 0x4a66 },
 +	{ 0x54022, 0x4a08 },
 +	{ 0x54024, 0x16 },
-	{ 0x5402b, 0x1000 },
+ 	{ 0x5402b, 0x1000 },
 -	{ 0x5402c, 0x3 },
 -	{ 0x5402d, 0x0 },
 -	{ 0x5402e, 0x0 },
@@ -1708,92 +1708,92 @@ index 46bc7f8591..9b12bc0ec6 100644
 +	{ 0x5403b, 0x84a },
 +	{ 0x5403c, 0x4a },
 +	{ 0x5403d, 0x1600 },
-	{ 0xd0000, 0x1 },
+ 	{ 0xd0000, 0x1 },
  };
-
+ 
  /* DRAM PHY init engine image */
 -struct dram_cfg_param lpddr4_phy_pie[] = {
 +struct dram_cfg_param ddr_phy_pie[] = {
-	{ 0xd0000, 0x0 },
-	{ 0x90000, 0x10 },
-	{ 0x90001, 0x400 },
+ 	{ 0xd0000, 0x0 },
+ 	{ 0x90000, 0x10 },
+ 	{ 0x90001, 0x400 },
 @@ -1177,9 +1710,9 @@ struct dram_cfg_param lpddr4_phy_pie[] = {
-	{ 0x400d6, 0x20a },
-	{ 0x400d7, 0x20b },
-	{ 0x2003a, 0x2 },
+ 	{ 0x400d6, 0x20a },
+ 	{ 0x400d7, 0x20b },
+ 	{ 0x2003a, 0x2 },
 -	{ 0x2000b, 0x64 },
 -	{ 0x2000c, 0xc8 },
 -	{ 0x2000d, 0x7d0 },
 +	{ 0x2000b, 0x4b },
 +	{ 0x2000c, 0x96 },
 +	{ 0x2000d, 0x5dc },
-	{ 0x2000e, 0x2c },
-	{ 0x12000b, 0xc },
-	{ 0x12000c, 0x19 },
+ 	{ 0x2000e, 0x2c },
+ 	{ 0x12000b, 0xc },
+ 	{ 0x12000c, 0x19 },
 @@ -1199,6 +1732,10 @@ struct dram_cfg_param lpddr4_phy_pie[] = {
-	{ 0x90013, 0x6152 },
-	{ 0x20010, 0x5a },
-	{ 0x20011, 0x3 },
+ 	{ 0x90013, 0x6152 },
+ 	{ 0x20010, 0x5a },
+ 	{ 0x20011, 0x3 },
 +	{ 0x120010, 0x5a },
 +	{ 0x120011, 0x3 },
 +	{ 0x220010, 0x5a },
 +	{ 0x220011, 0x3 },
-	{ 0x40080, 0xe0 },
-	{ 0x40081, 0x12 },
-	{ 0x40082, 0xe0 },
-@@ -1276,49 +1813,52 @@ struct dram_cfg_param lpddr4_phy_pie[] = {
-	{ 0x138b4, 0x1 },
-	{ 0x2003a, 0x2 },
-	{ 0xc0080, 0x2 },
+ 	{ 0x40080, 0xe0 },
+ 	{ 0x40081, 0x12 },
+ 	{ 0x40082, 0xe0 },
+@@ -1276,49 +1813,51 @@ struct dram_cfg_param lpddr4_phy_pie[] = {
+ 	{ 0x138b4, 0x1 },
+ 	{ 0x2003a, 0x2 },
+ 	{ 0xc0080, 0x2 },
 -	{ 0xd0000, 0x1 },
 +	{ 0xd0000, 0x1 }
  };
-
+ 
 -struct dram_fsp_msg lpddr4_dram_fsp_msg[] = {
 +struct dram_fsp_msg ddr_dram_fsp_msg[] = {
-	{
+ 	{
 -		/* P0 3200mts 1D */
 -		.drate = 3200,
 +		/* P0 2400mts 1D */
 +		.drate = 2400,
-		.fw_type = FW_1D_IMAGE,
+ 		.fw_type = FW_1D_IMAGE,
 -		.fsp_cfg = lpddr4_fsp0_cfg,
 -		.fsp_cfg_num = ARRAY_SIZE(lpddr4_fsp0_cfg),
 +		.fsp_cfg = ddr_fsp0_cfg,
 +		.fsp_cfg_num = ARRAY_SIZE(ddr_fsp0_cfg),
-	},
-	{
-		/* P1 400mts 1D */
-		.drate = 400,
-		.fw_type = FW_1D_IMAGE,
+ 	},
+ 	{
+ 		/* P1 400mts 1D */
+ 		.drate = 400,
+ 		.fw_type = FW_1D_IMAGE,
 -		.fsp_cfg = lpddr4_fsp1_cfg,
 -		.fsp_cfg_num = ARRAY_SIZE(lpddr4_fsp1_cfg),
 +		.fsp_cfg = ddr_fsp1_cfg,
 +		.fsp_cfg_num = ARRAY_SIZE(ddr_fsp1_cfg),
-	},
-	{
+ 	},
+ 	{
 -		/* P1 100mts 1D */
 +		/* P2 100mts 1D */
-		.drate = 100,
-		.fw_type = FW_1D_IMAGE,
+ 		.drate = 100,
+ 		.fw_type = FW_1D_IMAGE,
 -		.fsp_cfg = lpddr4_fsp2_cfg,
 -		.fsp_cfg_num = ARRAY_SIZE(lpddr4_fsp2_cfg),
 +		.fsp_cfg = ddr_fsp2_cfg,
 +		.fsp_cfg_num = ARRAY_SIZE(ddr_fsp2_cfg),
-	},
-	{
+ 	},
+ 	{
 -		/* P0 3200mts 2D */
 -		.drate = 3200,
 +		/* P0 2400mts 2D */
 +		.drate = 2400,
-		.fw_type = FW_2D_IMAGE,
+ 		.fw_type = FW_2D_IMAGE,
 -		.fsp_cfg = lpddr4_fsp0_2d_cfg,
 -		.fsp_cfg_num = ARRAY_SIZE(lpddr4_fsp0_2d_cfg),
 +		.fsp_cfg = ddr_fsp0_2d_cfg,
 +		.fsp_cfg_num = ARRAY_SIZE(ddr_fsp0_2d_cfg),
-	},
+ 	},
  };
-
+ 
 -/* lpddr4 timing config params on EVK board */
 +/* ddr timing config params */
  struct dram_timing_info dram_timing = {
@@ -1818,19 +1818,6 @@ index 46bc7f8591..9b12bc0ec6 100644
 +	.ddrphy_pie_num = ARRAY_SIZE(ddr_phy_pie),
 +	.fsp_table = { 2400, 400, 100, },
  };
-+
-diff --git a/include/configs/imx8mq_thor96.h b/include/configs/imx8mq_thor96.h
-index c0686930f1..0fba4ee7d0 100644
---- a/include/configs/imx8mq_thor96.h
-+++ b/include/configs/imx8mq_thor96.h
-@@ -167,7 +167,7 @@
-
- #define CONFIG_SYS_SDRAM_BASE           0x40000000
- #define PHYS_SDRAM                      0x40000000
--#define PHYS_SDRAM_SIZE			0xC0000000 /* 3GB DDR */
-+#define PHYS_SDRAM_SIZE			0x80000000 /* 2GB DDR */
-
- #define CONFIG_SYS_MEMTEST_START	PHYS_SDRAM
- #define CONFIG_SYS_MEMTEST_END		(CONFIG_SYS_MEMTEST_START + \
---
+-- 
 2.17.1
+

@@ -1,20 +1,21 @@
-From 825af214546651d906cf95ff65a326cab8832755 Mon Sep 17 00:00:00 2001
-From: "darshak.patel" <darshak.patel@einfochips.com>
-Date: Fri, 18 Dec 2020 12:05:37 +0530
-Subject: [PATCH 5/5] IMX8 THOR96: Zigbee reset gpio config
+From 497dfd8f575107e782061f72ac37e55175956f4f Mon Sep 17 00:00:00 2001
+From: Tejas Patel <tejas.patel1@einfochips.com>
+Date: Mon, 18 Oct 2021 19:00:16 +0530
+Subject: [PATCH 5/6] IMX8 THOR96: Zigbee reset gpio config
 
+Signed-off-by: Tejas Patel <tejas.patel1@einfochips.com>
 ---
- board/freescale/imx8mq_thor96/imx8mq_thor96.c | 33 +++++++++++++++++++
- 1 file changed, 33 insertions(+)
+ board/freescale/imx8mq_thor96/imx8mq_thor96.c | 31 +++++++++++++++++++
+ 1 file changed, 31 insertions(+)
 
 diff --git a/board/freescale/imx8mq_thor96/imx8mq_thor96.c b/board/freescale/imx8mq_thor96/imx8mq_thor96.c
-index 6ffef1daca..fcb7cc39ca 100644
+index 303c94cfe8..4777e00193 100644
 --- a/board/freescale/imx8mq_thor96/imx8mq_thor96.c
 +++ b/board/freescale/imx8mq_thor96/imx8mq_thor96.c
-@@ -236,6 +236,38 @@ static void user_leds_init(void)
-
+@@ -234,6 +234,36 @@ static void user_leds_init(void)
+ 
  }
-
+ 
 +struct gpio_desc zigbee_desc;
 +
 +static iomux_v3_cfg_t const zigbee_reset[] = {
@@ -23,40 +24,39 @@ index 6ffef1daca..fcb7cc39ca 100644
 +
 +static void zigbee_reset_init(void)
 +{
-+       int ret;
++	int ret;
 +
-+       printf("%s: Performing Zigbee reset \n", __func__);
++	printf("%s: Performing Zigbee reset \n", __func__);
 +
-+        imx_iomux_v3_setup_multiple_pads(zigbee_reset, ARRAY_SIZE(zigbee_reset));
++	imx_iomux_v3_setup_multiple_pads(zigbee_reset, ARRAY_SIZE(zigbee_reset));
 +
-+        ret = dm_gpio_lookup_name("GPIO5_4", &zigbee_desc);
-+        if (ret) {
-+                printf("%s lookup GPIO5_IO4 failed ret = %d\n", __func__, ret);
-+                return -ENODEV;
-+        }
++	ret = dm_gpio_lookup_name("GPIO5_4", &zigbee_desc);
++	if (ret) {
++		printf("%s lookup GPIO5_IO4 failed ret = %d\n", __func__, ret);
++	}
 +
-+        ret = dm_gpio_request(&zigbee_desc, "zigbee_reset");
-+        if (ret) {
-+                printf("%s request typec_sel failed ret = %d\n", __func__, ret);
-+                return -ENODEV;
-+        }
++	ret = dm_gpio_request(&zigbee_desc, "zigbee_reset");
++	if (ret) {
++		printf("%s request typec_sel failed ret = %d\n", __func__, ret);
++	}
 +
-+        dm_gpio_set_dir_flags(&zigbee_desc, GPIOD_IS_OUT);
++	dm_gpio_set_dir_flags(&zigbee_desc, GPIOD_IS_OUT);
 +
-+        dm_gpio_set_value(&zigbee_desc, 0);
++	dm_gpio_set_value(&zigbee_desc, 0);
 +
 +}
 +
  #if defined(CONFIG_USB_DWC3) || defined(CONFIG_USB_XHCI_IMX8M)
  int board_usb_init(int index, enum usb_init_type init)
  {
-@@ -292,6 +324,7 @@ int board_init(void)
-	setup_typec();
+@@ -290,6 +320,7 @@ int board_init(void)
+ 	setup_typec();
  #endif
-	user_leds_init();
+ 	user_leds_init();
 +	zigbee_reset_init();
-	return 0;
+ 	return 0;
  }
-
---
+ 
+-- 
 2.17.1
+
