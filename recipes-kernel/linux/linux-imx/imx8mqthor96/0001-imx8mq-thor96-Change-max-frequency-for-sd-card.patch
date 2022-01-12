@@ -1,0 +1,23 @@
+From 0a058fe70ecb3ac9c287b053b7c0bcb3e9996cfd Mon Sep 17 00:00:00 2001
+From: Tanvi Chauhan <tanvi.chauhan@einfochips.com>
+Date: Mon, 6 Dec 2021 16:05:31 +0530
+Subject: [PATCH 01/16] imx8mq-thor96: Change max frequency for sd card
+
+Change-Id: I9c9debc0e3cfcaf7e0f8746e57afc8cd2bd0d08a
+Signed-off-by: Tanvi Chauhan <tanvi.chauhan@einfochips.com>
+
+diff --git a/arch/arm64/boot/dts/freescale/imx8mq-thor96.dts b/arch/arm64/boot/dts/freescale/imx8mq-thor96.dts
+index 5d5aa6537..d8a7c0e63 100644
+--- a/arch/arm64/boot/dts/freescale/imx8mq-thor96.dts
++++ b/arch/arm64/boot/dts/freescale/imx8mq-thor96.dts
+@@ -356,6 +356,7 @@
+ 	pinctrl-2 = <&pinctrl_usdhc2_200mhz>, <&pinctrl_usdhc2_gpio>;
+ 	vmmc-supply = <&reg_usdhc2_vmmc>;
+ 	vqmmc-supply = <&reg_usdhc2_vqmmc>;
++	max-frequency = <180000000>;
+ 	cd-gpios = <&gpio2 12 GPIO_ACTIVE_LOW>;
+ 	bus-width = <4>;
+ 	no-sdio;
+-- 
+2.17.1
+

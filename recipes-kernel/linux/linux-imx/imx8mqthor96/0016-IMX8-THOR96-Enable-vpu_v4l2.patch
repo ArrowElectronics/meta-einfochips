@@ -1,0 +1,27 @@
+From 3e8b5e959ae45da0b564688111e382c77c2978ea Mon Sep 17 00:00:00 2001
+From: Tejas Patel <tejas.patel1@einfochips.com>
+Date: Fri, 3 Dec 2021 11:33:33 +0530
+Subject: [PATCH 16/16] IMX8 THOR96: Enable vpu_v4l2
+
+Change-Id: If382237e3296f2360901fb7c6e85bf4372afda3d
+Signed-off-by: Tejas Patel <tejas.patel1@einfochips.com>
+Signed-off-by: Tanvi Chauhan <tanvi.chauhan@einfochips.com>
+
+diff --git a/arch/arm64/boot/dts/freescale/imx8mq-thor96.dts b/arch/arm64/boot/dts/freescale/imx8mq-thor96.dts
+index a368463e7..6415c8ff6 100644
+--- a/arch/arm64/boot/dts/freescale/imx8mq-thor96.dts
++++ b/arch/arm64/boot/dts/freescale/imx8mq-thor96.dts
+@@ -1007,6 +1007,10 @@
+ 	status = "okay";
+ };
+ 
++&vpu_v4l2 {
++	status = "okay";
++};
++
+ &gpu3d {
+ 	status = "okay";
+ };
+-- 
+2.17.1
+

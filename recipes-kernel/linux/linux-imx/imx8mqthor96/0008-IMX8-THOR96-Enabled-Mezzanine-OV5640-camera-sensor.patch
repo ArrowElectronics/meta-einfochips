@@ -1,0 +1,184 @@
+From c5eb08430f6840cbcb1c325cc9e51befbdc17de0 Mon Sep 17 00:00:00 2001
+From: Tejas Patel <tejas.patel1@einfochips.com>
+Date: Tue, 19 Oct 2021 14:36:07 +0530
+Subject: [PATCH 08/16] IMX8 THOR96:Enabled Mezzanine OV5640 camera sensor
+
+Mezzanine OV5640 camera sensor is enabled in csi1 (i2c2) interface and
+OV5640 on csi1 interface is enabled via i2c3 interface.
+
+Change-Id: I8a275bb03b41097d7525c0b032a73482a62c32bc
+Signed-off-by: Tejas Patel <tejas.patel1@einfochips.com>
+Signed-off-by: Tanvi Chauhan <tanvi.chauhan@einfochips.com>
+
+diff --git a/arch/arm64/boot/dts/freescale/imx8mq-thor96.dts b/arch/arm64/boot/dts/freescale/imx8mq-thor96.dts
+index e89acd458..90b1288fe 100644
+--- a/arch/arm64/boot/dts/freescale/imx8mq-thor96.dts
++++ b/arch/arm64/boot/dts/freescale/imx8mq-thor96.dts
+@@ -167,6 +167,30 @@
+ 	status = "okay";
+ };
+ 
++&csi1_bridge {
++	fsl,mipi-mode;
++	fsl,two-8bit-sensor-mode;
++	status = "okay";
++
++	port {
++		csi1_ep: endpoint {
++			remote-endpoint = <&csi1_mipi_ep>;
++		};
++	};
++};
++
++&csi2_bridge {
++	fsl,mipi-mode;
++	fsl,two-8bit-sensor-mode;
++	status = "okay";
++
++	port {
++		csi2_ep: endpoint {
++			remote-endpoint = <&csi2_mipi_ep>;
++		};
++	};
++};
++
+ &fec1 {
+ 	pinctrl-names = "default";
+ 	pinctrl-0 = <&pinctrl_fec1>;
+@@ -187,6 +211,39 @@
+ 	};
+ };
+ 
++&mipi_csi_1 {
++	#address-cells = <1>;
++	#size-cells = <0>;
++	status = "okay";
++	port {
++		mipi1_sensor_ep: endpoint@0 {
++			remote-endpoint = <&ov5640_mipi1_ep>;
++			data-lanes = <1 2>;
++		};
++
++		csi1_mipi_ep: endpoint@1 {
++			remote-endpoint = <&csi1_ep>;
++		};
++	};
++};
++
++&mipi_csi_2 {
++	#address-cells = <1>;
++	#size-cells = <0>;
++	status = "okay";
++	port {
++		mipi2_sensor_ep: endpoint@0 {
++			remote-endpoint = <&ov5640_mipi2_ep>;
++			data-lanes = <1 2>;
++			bus-type = <4>;
++		};
++
++		csi2_mipi_ep: endpoint@1 {
++			remote-endpoint = <&csi2_ep>;
++		};
++	};
++};
++
+ /* LS-I2C0 */
+ &i2c1 {
+ 	clock-frequency = <100000>;
+@@ -328,6 +385,30 @@
+ 		pagesize = <32>;
+ 		status = "okay";
+ 	};
++
++	ov5640_mipi2: ov5640_mipi@3c {
++		compatible = "ovti,ov5640_mipi";
++		reg = <0x3c>;
++		status = "okay";
++		pinctrl-names = "default";
++		pinctrl-0 = <&pinctrl_csi2_pwn>;
++		clocks = <&clk IMX8MQ_CLK_CLKO1>;
++		clock-names = "csi_mclk";
++		assigned-clocks = <&clk IMX8MQ_CLK_CLKO1>;
++		assigned-clock-parents = <&clk IMX8MQ_SYS2_PLL_200M>;
++		assigned-clock-rates = <0>, <25000000>;
++		csi_id = <1>;
++		pwn-gpios = <&gpio1 5 GPIO_ACTIVE_HIGH>;
++		rst-gpios = <&gpio3 13 GPIO_ACTIVE_LOW>;
++		mclk = <25000000>;
++		mclk_source = <0>;
++
++		port {
++			ov5640_mipi2_ep: endpoint {
++				remote-endpoint = <&mipi2_sensor_ep>;
++			};
++		};
++	};
+ };
+ 
+ /* HS-I2C2 */
+@@ -337,6 +418,30 @@
+ 	pinctrl-0 = <&pinctrl_i2c3>;
+ 	status = "okay";
+ 
++        ov5640_mipi: ov5640_mipi@3c {
++            compatible = "ovti,ov5640_mipi";
++            reg = <0x3c>;
++            status = "okay";
++            pinctrl-names = "default";
++            pinctrl-0 = <&pinctrl_csi1_pwn>;
++            clocks = <&clk IMX8MQ_CLK_CLKO2>;
++            clock-names = "csi_mclk";
++            assigned-clocks = <&clk IMX8MQ_CLK_CLKO2>,
++                      <&clk IMX8MQ_CLK_CLKO2>;
++            assigned-clock-parents = <&clk IMX8MQ_SYS2_PLL_200M>;
++            assigned-clock-rates = <0>, <20000000>;
++            csi_id = <0>;
++            pwn-gpios = <&gpio1 3 GPIO_ACTIVE_HIGH>;
++            rst-gpios = <&gpio3 12 GPIO_ACTIVE_LOW>;
++            mclk = <20000000>;
++            mclk_source = <0>;
++            port {
++                ov5640_mipi1_ep: endpoint {
++                    remote-endpoint = <&mipi1_sensor_ep>;
++                };
++            };
++        };
++
+ 	synaptics_dsx_ts: synaptics_dsx_ts@20 {
+ 		compatible = "synaptics_dsx";
+ 		reg = <0x20>;
+@@ -525,6 +630,19 @@
+ 		>;
+ 	};
+ 
++	pinctrl_csi1_pwn: csi1_pwn_grp {
++		fsl,pins = <
++			MX8MQ_IOMUXC_GPIO1_IO03_GPIO1_IO3		0x19
++			MX8MQ_IOMUXC_GPIO1_IO15_CCMSRCGPCMIX_CLKO2      0x59
++		>;
++	};
++	pinctrl_csi2_pwn: csi2_pwn_grp {
++		fsl,pins = <
++			MX8MQ_IOMUXC_GPIO1_IO05_GPIO1_IO5		0x19
++			MX8MQ_IOMUXC_GPIO1_IO14_CCMSRCGPCMIX_CLKO1      0x59
++		>;
++	};
++
+ 	pinctrl_ecspi2: ecspi2grp {
+ 		fsl,pins = <
+ 			MX8MQ_IOMUXC_ECSPI2_SCLK_ECSPI2_SCLK		0x16
+@@ -769,3 +887,11 @@
+ 		};
+ 	};
+ };
++
++&ov5640_mipi {
++     status = "okay";
++};
++
++&ov5640_mipi2 {
++     status = "okay";
++};
+-- 
+2.17.1
+

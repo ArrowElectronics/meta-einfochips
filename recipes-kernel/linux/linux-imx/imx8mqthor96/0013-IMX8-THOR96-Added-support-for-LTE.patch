@@ -1,71 +1,26 @@
-From c768d7d8fe11b979963efc429856034b3f49b42c Mon Sep 17 00:00:00 2001
-From: "darshak.patel" <darshak.patel@einfochips.com>
-Date: Thu, 10 Dec 2020 17:14:27 +0530
-Subject: [PATCH 13/18] IMX8 THOR96: Added support for LTE
+From 869340f14bc32dd0097c50b52d20cc0c7518e7e7 Mon Sep 17 00:00:00 2001
+From: Tejas Patel <tejas.patel1@einfochips.com>
+Date: Tue, 19 Oct 2021 14:48:55 +0530
+Subject: [PATCH 13/16] IMX8 THOR96: Added support for LTE
 
 - Added LTE Modem Quectel EC25 Modem support
----
- .../boot/dts/freescale/imx8mq-thor96.dts      | 22 ++++++++++++-------
- 1 file changed, 14 insertions(+), 8 deletions(-)
+
+Change-Id: If0d2cc613b2813b78e7bf79ad692bd8f935c3984
+Signed-off-by: Tejas Patel <tejas.patel1@einfochips.com>
+Signed-off-by: Tanvi Chauhan <tanvi.chauhan@einfochips.com>
 
 diff --git a/arch/arm64/boot/dts/freescale/imx8mq-thor96.dts b/arch/arm64/boot/dts/freescale/imx8mq-thor96.dts
-index 2eae84f1b447..0dbd230d19b0 100755
+index 26480402e..15d3a9687 100644
 --- a/arch/arm64/boot/dts/freescale/imx8mq-thor96.dts
 +++ b/arch/arm64/boot/dts/freescale/imx8mq-thor96.dts
-@@ -764,10 +764,10 @@
-	status = "okay";
- };
-
--&uart3 { /* BT */
-+&uart2 { /* BT */
-	pinctrl-names = "default";
--	pinctrl-0 = <&pinctrl_uart3>;
--	assigned-clocks = <&clk IMX8MQ_CLK_UART3>;
-+	pinctrl-0 = <&pinctrl_uart2>;
-+	assigned-clocks = <&clk IMX8MQ_CLK_UART2>;
-	assigned-clock-parents = <&clk IMX8MQ_SYS1_PLL_80M>;
-	fsl,uart-has-rtscts;
-	resets = <&modem_reset>;
-@@ -993,7 +993,6 @@
-	pinctrl_pcie0: pcie0grp {
-		fsl,pins = <
-			MX8MQ_IOMUXC_I2C4_SCL_PCIE1_CLKREQ_B		0x76
--			MX8MQ_IOMUXC_UART4_RXD_GPIO5_IO28		0x16
-		>;
-	};
-
-@@ -1132,13 +1131,20 @@
-		>;
-	};
-
-+	pinctrl_uart2: uart2grp {
-+            fsl,pins = <
-+                MX8MQ_IOMUXC_UART2_RXD_UART2_DCE_RX     0x49
-+                MX8MQ_IOMUXC_UART2_TXD_UART2_DCE_TX     0x49
-+                MX8MQ_IOMUXC_UART4_RXD_UART2_DCE_CTS_B  0x49
-+                MX8MQ_IOMUXC_UART4_TXD_UART2_DCE_RTS_B  0x49
-+                MX8MQ_IOMUXC_NAND_CLE_GPIO3_IO5         0x19
-+            >;
-+	};
-+
-	pinctrl_uart3: uart3grp {
-		fsl,pins = <
-			MX8MQ_IOMUXC_UART3_TXD_UART3_DCE_TX		0x49
-			MX8MQ_IOMUXC_UART3_RXD_UART3_DCE_RX		0x49
--			MX8MQ_IOMUXC_ECSPI1_MISO_UART3_DCE_CTS_B	0x49
--			MX8MQ_IOMUXC_ECSPI1_SS0_UART3_DCE_RTS_B		0x49
--			MX8MQ_IOMUXC_NAND_CLE_GPIO3_IO5			0x19
-		>;
-	};
-
-@@ -1250,7 +1256,7 @@
-
-	pinctrl_wifi_reset: wifiresetgrp {
-		fsl,pins = <
--			MX8MQ_IOMUXC_UART4_TXD_GPIO5_IO29		0x16
-+
-		>;
-	};
- };
---
+@@ -834,6 +834,7 @@
+ 			MX8MQ_IOMUXC_UART2_TXD_UART2_DCE_TX		0x49
+ 			MX8MQ_IOMUXC_UART4_RXD_UART2_DCE_CTS_B		0x49
+ 			MX8MQ_IOMUXC_UART4_TXD_UART2_DCE_RTS_B		0x49
++			MX8MQ_IOMUXC_NAND_CLE_GPIO3_IO5         0x19
+ 		>;
+ 	};
+ 
+-- 
 2.17.1
+

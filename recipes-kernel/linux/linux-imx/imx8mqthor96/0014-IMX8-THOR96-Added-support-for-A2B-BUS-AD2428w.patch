@@ -1,37 +1,24 @@
-From 775ac411f62ad4a60301bd2e8840825e4d5cf8f6 Mon Sep 17 00:00:00 2001
-From: "darshak.patel" <darshak.patel@einfochips.com>
-Date: Thu, 10 Dec 2020 18:37:30 +0530
-Subject: [PATCH 15/18] IMX8 THOR96: Added support for A2B BUS AD2428w
+From 6a99372b6b825d85bdfb2e7f748721f725d50545 Mon Sep 17 00:00:00 2001
+From: Tejas Patel <tejas.patel1@einfochips.com>
+Date: Tue, 19 Oct 2021 15:05:09 +0530
+Subject: [PATCH 14/16] IMX8 THOR96: Added support for A2B BUS AD2428w
 
 1. Added dts node for machine driver and codec driver
 2. Devloped Imx8mq based machine layer code
 3. Added driver support for AD2428w master
----
- .../boot/dts/freescale/imx8mq-thor96.dts      |   18 +-
- sound/soc/codecs/Kconfig                      |    9 +
- sound/soc/codecs/Makefile                     |    4 +
- sound/soc/codecs/a2b24xx-i2c.c                |   64 +
- sound/soc/codecs/a2b24xx.c                    |  383 +++++
- sound/soc/codecs/a2b24xx.h                    |   38 +
- sound/soc/codecs/adi_a2b_i2c_commandlist.h    | 1526 +++++++++++++++++
- sound/soc/fsl/Kconfig                         |   13 +
- sound/soc/fsl/Makefile                        |    2 +
- sound/soc/fsl/imx-adau-a2b2428.c              |  214 +++
- 10 files changed, 2268 insertions(+), 3 deletions(-)
- create mode 100644 sound/soc/codecs/a2b24xx-i2c.c
- create mode 100644 sound/soc/codecs/a2b24xx.c
- create mode 100644 sound/soc/codecs/a2b24xx.h
- create mode 100644 sound/soc/codecs/adi_a2b_i2c_commandlist.h
- create mode 100644 sound/soc/fsl/imx-adau-a2b2428.c
+
+Change-Id: I4552cbf6d70092ba19491c65ada2544d26240539
+Signed-off-by: Tejas Patel <tejas.patel1@einfochips.com>
+Signed-off-by: Tanvi Chauhan <tanvi.chauhan@einfochips.com>
 
 diff --git a/arch/arm64/boot/dts/freescale/imx8mq-thor96.dts b/arch/arm64/boot/dts/freescale/imx8mq-thor96.dts
-index 0dbd230d19b0..b4a7e8fde268 100755
+index 15d3a9687..098a525e6 100644
 --- a/arch/arm64/boot/dts/freescale/imx8mq-thor96.dts
 +++ b/arch/arm64/boot/dts/freescale/imx8mq-thor96.dts
-@@ -219,6 +219,13 @@
+@@ -123,6 +123,13 @@
                  audio-codec = <&adau1361>;
          };
-
+ 
 +        sound-ad2428w {
 +                compatible = "fsl,imx-ad2428w";
 +                model = "ad24xx-a2b-bus";
@@ -39,66 +26,84 @@ index 0dbd230d19b0..b4a7e8fde268 100755
 +                audio-codec = <&a2b24xx>;
 +        };
 +
-	sound-hdmi-arc {
-		compatible = "fsl,imx-audio-spdif";
-		model = "imx-hdmi-arc";
-@@ -368,12 +375,11 @@
+ 	sound-hdmi-arc {
+ 		compatible = "fsl,imx-audio-spdif";
+ 		model = "imx-hdmi-arc";
+@@ -409,6 +416,15 @@
+ 	status = "okay";
  };
-
- &sai3 {
--	#sound-dai-cells = <0>;
-	pinctrl-names = "default";
-	pinctrl-0 = <&pinctrl_sai3>;
--	assigned-clocks = <&clk IMX8MQ_CLK_SAI3>;
+ 
++&sai3 {
++	pinctrl-names = "default";
++	pinctrl-0 = <&pinctrl_sai3>;
 +	assigned-clocks = <&clk IMX8MQ_CLK_SAI3> , <&clk IMX8MQ_CLK_SAI3>;
-	assigned-clock-parents = <&clk IMX8MQ_AUDIO_PLL1_OUT>;
--	assigned-clock-rates = <24576000>;
++	assigned-clock-parents = <&clk IMX8MQ_AUDIO_PLL1_OUT>;
 +	assigned-clock-rates =  <0>, <12288000>;
-	status = "okay";
- };
-
-@@ -658,6 +664,12 @@
-		status = "okay";
-	};
-
-+	a2b24xx: a2b24xx@0x68 {
++	status = "okay";
++};
++
+ &sai4 {
+ 	assigned-clocks = <&clk IMX8MQ_CLK_SAI4>;
+ 	assigned-clock-parents = <&clk IMX8MQ_AUDIO_PLL1_OUT>;
+@@ -459,6 +475,12 @@
+ 		status = "okay";
+ 	};
+ 
++	a2b24xx: a2b24xx@68 {
 +                compatible = "adi,a2b24xx";
 +                reg = <0x68>;
 +                status = "okay";
 +	};
 +
-	ov5640_mipi2: ov5640_mipi@3c {
-		compatible = "ovti,ov5640_mipi";
-		reg = <0x3c>;
+ 	ov5640_mipi2: ov5640_mipi@3c {
+ 		compatible = "ovti,ov5640_mipi";
+ 		reg = <0x3c>;
+@@ -793,6 +815,15 @@
+ 		>;
+ 	};
+ 
++	pinctrl_sai3: sai3grp {
++		fsl,pins = <
++			MX8MQ_IOMUXC_SAI3_TXFS_SAI3_TX_SYNC     0xd6
++			MX8MQ_IOMUXC_SAI3_TXC_SAI3_TX_BCLK      0xd6
++			MX8MQ_IOMUXC_SAI3_TXD_SAI3_TX_DATA0	0xd6
++			MX8MQ_IOMUXC_SAI3_RXD_SAI3_RX_DATA0	0xd6
++		>;
++	};
++
+ 	pinctrl_leds: ledsgrp {
+ 		fsl,pins = <
+ 			MX8MQ_IOMUXC_SAI2_RXFS_GPIO4_IO21		0x19
 diff --git a/sound/soc/codecs/Kconfig b/sound/soc/codecs/Kconfig
-index f128ffabf5e5..792dfac47d61 100644
+index 0348bdde6..38e89a00e 100644
 --- a/sound/soc/codecs/Kconfig
 +++ b/sound/soc/codecs/Kconfig
 @@ -32,6 +32,7 @@ config SND_SOC_ALL_CODECS
-	select SND_SOC_ADAV803 if I2C
-	select SND_SOC_ADAU1977_SPI if SPI_MASTER
-	select SND_SOC_ADAU1977_I2C if I2C
-+	select SND_SOC_A2B24XX_I2C if I2C
-	select SND_SOC_ADAU1701 if I2C
-	select SND_SOC_ADAU7002
-	select SND_SOC_ADS117X
-@@ -395,6 +396,14 @@ config SND_SOC_ADAU1977_I2C
-	select SND_SOC_ADAU1977
-	select REGMAP_I2C
-
+ 	imply SND_SOC_ADAV803
+ 	imply SND_SOC_ADAU1977_SPI
+ 	imply SND_SOC_ADAU1977_I2C
++	imply SND_SOC_A2B24XX_I2C
+ 	imply SND_SOC_ADAU1701
+ 	imply SND_SOC_ADAU7002
+ 	imply SND_SOC_ADAU7118_I2C
+@@ -428,6 +429,15 @@ config SND_SOC_ADAU1977_I2C
+ 	select SND_SOC_ADAU1977
+ 	select REGMAP_I2C
+ 
 +config SND_SOC_A2B24XX
 +       tristate
 +
 +config SND_SOC_A2B24XX_I2C
 +       tristate
++       depends on I2C
 +       select SND_SOC_A2B24XX
 +       select REGMAP_I2C
 +
  config SND_SOC_ADAU7002
-	tristate "Analog Devices ADAU7002 Stereo PDM-to-I2S/TDM Converter"
-
+ 	tristate "Analog Devices ADAU7002 Stereo PDM-to-I2S/TDM Converter"
+ 
 diff --git a/sound/soc/codecs/Makefile b/sound/soc/codecs/Makefile
-index 58c2b3cec86f..009ea3cf3eb0 100644
+index 6cd9ddbb5..dd02bb748 100644
 --- a/sound/soc/codecs/Makefile
 +++ b/sound/soc/codecs/Makefile
 @@ -21,6 +21,8 @@ snd-soc-adau1781-spi-objs := adau1781-spi.o
@@ -108,23 +113,23 @@ index 58c2b3cec86f..009ea3cf3eb0 100644
 +snd-soc-a2b24xx-objs := a2b24xx.o
 +snd-soc-a2b24xx-i2c-objs := a2b24xx-i2c.o
  snd-soc-adau7002-objs := adau7002.o
- snd-soc-adav80x-objs := adav80x.o
- snd-soc-adav801-objs := adav801.o
-@@ -308,6 +310,8 @@ obj-$(CONFIG_SND_SOC_ADAU1781_SPI)	+= snd-soc-adau1781-spi.o
+ snd-soc-adau7118-objs := adau7118.o
+ snd-soc-adau7118-i2c-objs := adau7118-i2c.o
+@@ -332,6 +334,8 @@ obj-$(CONFIG_SND_SOC_ADAU1781_SPI)	+= snd-soc-adau1781-spi.o
  obj-$(CONFIG_SND_SOC_ADAU1977)		+= snd-soc-adau1977.o
  obj-$(CONFIG_SND_SOC_ADAU1977_SPI)	+= snd-soc-adau1977-spi.o
  obj-$(CONFIG_SND_SOC_ADAU1977_I2C)	+= snd-soc-adau1977-i2c.o
 +obj-$(CONFIG_SND_SOC_A2B24XX)          += snd-soc-a2b24xx.o
 +obj-$(CONFIG_SND_SOC_A2B24XX_I2C)      += snd-soc-a2b24xx-i2c.o
  obj-$(CONFIG_SND_SOC_ADAU7002)	+= snd-soc-adau7002.o
- obj-$(CONFIG_SND_SOC_ADAV80X)  += snd-soc-adav80x.o
- obj-$(CONFIG_SND_SOC_ADAV801)  += snd-soc-adav801.o
+ obj-$(CONFIG_SND_SOC_ADAU7118)	+= snd-soc-adau7118.o
+ obj-$(CONFIG_SND_SOC_ADAU7118_I2C)	+= snd-soc-adau7118-i2c.o
 diff --git a/sound/soc/codecs/a2b24xx-i2c.c b/sound/soc/codecs/a2b24xx-i2c.c
 new file mode 100644
-index 000000000000..dcad9488fcb6
+index 000000000..f2c885b0e
 --- /dev/null
 +++ b/sound/soc/codecs/a2b24xx-i2c.c
-@@ -0,0 +1,64 @@
+@@ -0,0 +1,63 @@
 +/*
 + * A2B24xx driver
 + *
@@ -188,13 +193,12 @@ index 000000000000..dcad9488fcb6
 +MODULE_DESCRIPTION("ASoC A2B24xx driver");
 +MODULE_AUTHOR("ADI Automotive Software Team, Bangalore");
 +MODULE_LICENSE("GPL");
-+
 diff --git a/sound/soc/codecs/a2b24xx.c b/sound/soc/codecs/a2b24xx.c
 new file mode 100644
-index 000000000000..69f5ecb0e44a
+index 000000000..5cfb04df3
 --- /dev/null
 +++ b/sound/soc/codecs/a2b24xx.c
-@@ -0,0 +1,383 @@
+@@ -0,0 +1,382 @@
 +/*
 + * A2B24XX driver
 + *
@@ -274,9 +278,9 @@ index 000000000000..69f5ecb0e44a
 + @brief          This function calculates reg value based on width and adds
 + it to the data array
 +
-+ @param [in]     pDstBuf               Pointer to destination array
-+ @param [in]     nAddrwidth            Data unpacking boundary(1 byte / 2 byte /4 byte )
-+ @param [in]     nAddr            	  Number of words to be copied
++ @param [in]     pDstBuf	Pointer to destination array
++ @param [in]     nAddrwidth	Data unpacking boundary(1 byte / 2 byte /4 byte )
++ @param [in]     nAddr		Number of words to be copied
 +
 + @return          Return code
 + - 0: Success
@@ -555,7 +559,7 @@ index 000000000000..69f5ecb0e44a
 +		dev_err(dev, "Failed to register CODEC: %d\n", ret);
 +	}
 +
-+ 	return ret;
++	return ret;
 +}
 +EXPORT_SYMBOL_GPL(a2b24xx_probe);
 +
@@ -577,13 +581,12 @@ index 000000000000..69f5ecb0e44a
 +MODULE_DESCRIPTION("ASoC A2B24XX driver");
 +MODULE_AUTHOR("ADI Automotive Software Team, Bangalore");
 +MODULE_LICENSE("GPL");
-+
 diff --git a/sound/soc/codecs/a2b24xx.h b/sound/soc/codecs/a2b24xx.h
 new file mode 100644
-index 000000000000..f67707b60387
+index 000000000..e29c6954b
 --- /dev/null
 +++ b/sound/soc/codecs/a2b24xx.h
-@@ -0,0 +1,38 @@
+@@ -0,0 +1,37 @@
 +/*
 + * A2B24XX driver
 + *
@@ -621,13 +624,12 @@ index 000000000000..f67707b60387
 +};
 +
 +#endif
-+
 diff --git a/sound/soc/codecs/adi_a2b_i2c_commandlist.h b/sound/soc/codecs/adi_a2b_i2c_commandlist.h
 new file mode 100644
-index 000000000000..79905eedb013
+index 000000000..77b41edb5
 --- /dev/null
 +++ b/sound/soc/codecs/adi_a2b_i2c_commandlist.h
-@@ -0,0 +1,1526 @@
+@@ -0,0 +1,1525 @@
 +/*******************************************************************************
 +* A2B24xx I2C Commandlist
 +*
@@ -2153,16 +2155,14 @@ index 000000000000..79905eedb013
 +};
 +
 +#endif /* _ADI_A2B_I2C_LIST_H_ */
-+
 diff --git a/sound/soc/fsl/Kconfig b/sound/soc/fsl/Kconfig
-index ebe29a9cd411..f711f469710e 100644
+index 509c706a2..60acfb9c6 100644
 --- a/sound/soc/fsl/Kconfig
 +++ b/sound/soc/fsl/Kconfig
-@@ -392,6 +392,19 @@ config SND_SOC_IMX_ADAU1361
-           SoC Audio support for i.MX boards with adau1361
+@@ -383,6 +383,19 @@ config SND_SOC_IMX_ADAU1361
            Say Y if you want to add support for SoC audio on an i.MX board with
            a adau1361 codec.
-+
+ 
 +config SND_SOC_IMX_A2B24XX
 +         tristate "SoC Audio support for i.MX boards with A2B AD2428"
 +         depends on OF && I2C
@@ -2175,35 +2175,36 @@ index ebe29a9cd411..f711f469710e 100644
 +          SoC Audio support for i.MX boards with A2B AD2428
 +          Say Y if you want to add support for SoC audio on an i.MX board with
 +          a AD2428 A2B Bus.
-
++
  config SND_SOC_IMX_SII902X
-	tristate "SoC Audio support for i.MX boards with sii902x"
+ 	tristate "SoC Audio support for i.MX boards with sii902x"
+ 	depends on OF && I2C
 diff --git a/sound/soc/fsl/Makefile b/sound/soc/fsl/Makefile
-index 5230c969532f..e3d3ad48c5ad 100644
+index 97b549b13..821f838e7 100644
 --- a/sound/soc/fsl/Makefile
 +++ b/sound/soc/fsl/Makefile
-@@ -88,6 +88,7 @@ snd-soc-imx-wm8960-objs := imx-wm8960.o
- snd-soc-imx-wm8524-objs := imx-wm8524.o
- snd-soc-imx-wm8962-objs := imx-wm8962.o
- snd-soc-imx-adau1361-objs := imx_adau1361v1.o
-+snd-soc-imx-adau-a2b2428-objs := imx-adau-a2b2428.o
- snd-soc-imx-sii902x-objs := imx-sii902x.o
+@@ -88,6 +88,7 @@ snd-soc-imx-sii902x-objs := imx-sii902x.o
  snd-soc-imx-spdif-objs := imx-spdif.o
  snd-soc-imx-mc13783-objs := imx-mc13783.o
-@@ -119,6 +120,7 @@ obj-$(CONFIG_SND_SOC_IMX_WM8962) += snd-soc-imx-wm8962.o
- obj-$(CONFIG_SND_SOC_IMX_SII902X) += snd-soc-imx-sii902x.o
+ snd-soc-imx-adau1361-objs := imx_adau1361v1.o
++snd-soc-imx-adau-a2b2428-objs := imx-adau-a2b2428.o
+ snd-soc-imx-audmix-objs := imx-audmix.o
+ snd-soc-imx-rpmsg-objs := imx-rpmsg.o
+ snd-soc-imx-xcvr-objs := imx-xcvr.o
+@@ -115,6 +116,7 @@ obj-$(CONFIG_SND_SOC_IMX_MC13783) += snd-soc-imx-mc13783.o
+ obj-$(CONFIG_SND_SOC_IMX_AUDMIX) += snd-soc-imx-audmix.o
  obj-$(CONFIG_SND_SOC_IMX_RPMSG) += snd-soc-imx-rpmsg.o
  obj-$(CONFIG_SND_SOC_IMX_ADAU1361) += snd-soc-imx-adau1361.o
 +obj-$(CONFIG_SND_SOC_IMX_A2B24XX) += snd-soc-imx-adau-a2b2428.o
- obj-$(CONFIG_SND_SOC_IMX_SPDIF) += snd-soc-imx-spdif.o
- obj-$(CONFIG_SND_SOC_IMX_MC13783) += snd-soc-imx-mc13783.o
- obj-$(CONFIG_SND_SOC_IMX_AUDMIX) += snd-soc-imx-audmix.o
+ obj-$(CONFIG_SND_SOC_IMX_XCVR) += snd-soc-imx-xcvr.o
+ obj-$(CONFIG_SND_SOC_IMX_PDM_MIC) += snd-soc-imx-pdm.o
+ obj-$(CONFIG_SND_SOC_IMX_AK4458) += snd-soc-imx-ak4458.o
 diff --git a/sound/soc/fsl/imx-adau-a2b2428.c b/sound/soc/fsl/imx-adau-a2b2428.c
 new file mode 100644
-index 000000000000..a3e7990c3b0b
+index 000000000..32f5c900b
 --- /dev/null
 +++ b/sound/soc/fsl/imx-adau-a2b2428.c
-@@ -0,0 +1,214 @@
+@@ -0,0 +1,213 @@
 +/*copyright (C) 2015-2019 Einfochips Ltd.
 + *
 + * The code contained herein is licensed under the GNU General Public
@@ -2241,8 +2242,8 @@ index 000000000000..a3e7990c3b0b
 +				     struct snd_pcm_hw_params *params)
 +{
 +	struct snd_soc_pcm_runtime *rtd = substream->private_data;
-+	struct snd_soc_dai *cpu_dai = rtd->cpu_dai;
-+	struct snd_soc_dai *codec_dai = rtd->codec_dai;
++	struct snd_soc_dai *cpu_dai = asoc_rtd_to_cpu(rtd, 0);
++	struct snd_soc_dai *codec_dai = asoc_rtd_to_codec(rtd, 0);
 +	int pll_rate;
 +	int ret;
 +	printk("%s:%d\n",__func__,__LINE__);
@@ -2417,6 +2418,6 @@ index 000000000000..a3e7990c3b0b
 +MODULE_DESCRIPTION("Freescale i.MX AD2428w ASoC machine driver");
 +MODULE_LICENSE("GPL v2");
 +MODULE_ALIAS("platform:imx-thor96");
-+
---
+-- 
 2.17.1
+

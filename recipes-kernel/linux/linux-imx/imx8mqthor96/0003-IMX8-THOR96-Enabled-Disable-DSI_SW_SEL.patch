@@ -1,0 +1,78 @@
+From 1338dbb98403a86c63db2df212cc66f3aac7db7a Mon Sep 17 00:00:00 2001
+From: Tejas Patel <tejas.patel1@einfochips.com>
+Date: Thu, 11 Nov 2021 14:56:07 +0530
+Subject: [PATCH 03/16] IMX8 THOR96: Enabled/Disable DSI_SW_SEL
+
+Change-Id: I64613b9aa877193089e8f319d52d757f450c5160
+Signed-off-by: Tejas Patel <tejas.patel1@einfochips.com>
+Signed-off-by: Tanvi Chauhan <tanvi.chauhan@einfochips.com>
+
+diff --git a/drivers/gpu/drm/bridge/nwl-dsi.c b/drivers/gpu/drm/bridge/nwl-dsi.c
+index 8d42d5671..50d1e660a 100644
+--- a/drivers/gpu/drm/bridge/nwl-dsi.c
++++ b/drivers/gpu/drm/bridge/nwl-dsi.c
+@@ -22,6 +22,8 @@
+ #include <linux/reset.h>
+ #include <linux/sys_soc.h>
+ #include <linux/time64.h>
++#include <linux/delay.h>
++#include <linux/gpio.h>
+ 
+ #include <drm/drm_atomic_helper.h>
+ #include <drm/drm_atomic_state_helper.h>
+@@ -39,6 +41,11 @@
+ 
+ #define DRV_NAME "nwl-dsi"
+ 
++/*MIPI switch gpio*/
++#define IMX8HMI_MIPI_DSI_SW_GPIO        68
++#define MEZANINE_EN             	1
++#define MEZANINE_DIS                	0
++
+ /* i.MX8 NWL quirks */
+ /* i.MX8MQ errata E11418 */
+ #define E11418_HS_MODE_QUIRK	BIT(0)
+@@ -2032,6 +2039,8 @@ static int nwl_dsi_probe(struct platform_device *pdev)
+ 	const struct of_device_id *of_id = of_match_device(nwl_dsi_dt_ids, dev);
+ 	const struct soc_device_attribute *attr;
+ 	struct nwl_dsi *dsi;
++	uint8_t mipi_sw_en_status = MEZANINE_DIS;
++	unsigned int dsi_sw_sel = IMX8HMI_MIPI_DSI_SW_GPIO ;
+ 	int ret;
+ 
+ 	if (!of_id || !of_id->data)
+@@ -2060,6 +2069,31 @@ static int nwl_dsi_probe(struct platform_device *pdev)
+ 		return ret;
+ 	}
+ 
++	/* Default status of Mezzanine DSI : Disabled */
++	if (of_property_read_bool(dev->of_node, "Mezzanine_DSI")) {
++	        mipi_sw_en_status = MEZANINE_EN;
++	        printk("Mezzanine DSI enabled \n");
++	}
++	else {
++	        printk("Mezzanine DSI disabled \n");
++	}
++
++	printk("dsi_sw_sel gpio val %d \n",dsi_sw_sel);
++	if (!gpio_is_valid(dsi_sw_sel)) {
++	        printk("invalid dsi_sw_sel gpio, cannot switch mipi sw\n");
++	        return -ENODEV;
++	}
++
++	ret = gpio_request(dsi_sw_sel, "mipi_switch");
++	if (ret < 0) {
++	        printk("request dsi_sw_sel failed, cannot switch mipi sw: %d\n",
++	                ret);
++	        return ret;
++	}
++
++	gpio_direction_output(dsi_sw_sel, mipi_sw_en_status);
++	gpio_set_value(dsi_sw_sel, mipi_sw_en_status);
++
+ 	dsi->dsi_host.ops = &nwl_dsi_host_ops;
+ 	dsi->dsi_host.dev = dev;
+ 	ret = mipi_dsi_host_register(&dsi->dsi_host);
+-- 
+2.17.1
+

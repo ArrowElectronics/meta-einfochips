@@ -1,32 +1,38 @@
-From e53e3904cbaff26222ec467d33e9b124ca783193 Mon Sep 17 00:00:00 2001
-From: "darshak.patel" <darshak.patel@einfochips.com>
-Date: Thu, 10 Dec 2020 16:02:44 +0530
-Subject: [PATCH 10/18] IMX8 THOR96: Added support of spi2 for zigbee
+From cac55ce175bbf125500ab20055987d2211b4f3da Mon Sep 17 00:00:00 2001
+From: Tejas Patel <tejas.patel1@einfochips.com>
+Date: Tue, 19 Oct 2021 14:47:08 +0530
+Subject: [PATCH 12/16] IMX8 THOR96: Added support of spi2 for zigbee
 
  1. Changed the pin muxing,
  2. Added GPIO configuration for supporting mgm111 zigbee module
  3. Removed conflicting pin from audio codec
----
- .../boot/dts/freescale/imx8mq-thor96.dts      | 36 ++++++++++++++++---
- arch/arm64/boot/dts/freescale/imx8mq.dtsi     |  4 +--
- 2 files changed, 34 insertions(+), 6 deletions(-)
+
+Change-Id: Id64975a8bab986d79b9827bc479d883c101ca326
+Signed-off-by: Tejas Patel <tejas.patel1@einfochips.com>
+Signed-off-by: Tanvi Chauhan <tanvi.chauhan@einfochips.com>
 
 diff --git a/arch/arm64/boot/dts/freescale/imx8mq-thor96.dts b/arch/arm64/boot/dts/freescale/imx8mq-thor96.dts
-index 6d3f68c872e4..f678a16ac3fb 100755
+index 75dfd9d9b..26480402e 100644
 --- a/arch/arm64/boot/dts/freescale/imx8mq-thor96.dts
 +++ b/arch/arm64/boot/dts/freescale/imx8mq-thor96.dts
-@@ -129,7 +129,6 @@
-	wm8524: audio-codec {
-		#sound-dai-cells = <0>;
-		compatible = "wlf,wm8524";
--		wlf,mute-gpios = <&gpio1 8 GPIO_ACTIVE_LOW>;
-	};
-
-	sound-bt-sco {
-@@ -817,6 +816,21 @@
-	};
+@@ -189,13 +189,6 @@
+ 	};
  };
-
+ 
+-/* LS-SPI0 */
+-&ecspi2 {
+-	pinctrl-names = "default";
+-	pinctrl-0 = <&pinctrl_ecspi2>;
+-	status = "okay";
+-};
+-
+ &csi1_bridge {
+ 	fsl,mipi-mode;
+ 	fsl,two-8bit-sensor-mode;
+@@ -650,6 +643,21 @@
+ 	};
+ };
+ 
 +&ecspi2 {
 +        pinctrl-names = "default";
 +        pinctrl-0 = <&pinctrl_ecspi2>, <&pinctrl_zigbee_ctrl>;
@@ -34,7 +40,7 @@ index 6d3f68c872e4..f678a16ac3fb 100755
 +        spi-max-frequency = <10000000>;
 +        status = "okay";
 +
-+        spidev@0x00 {
++        spidev@0 {
 +                compatible = "rohm,dh2228fv";
 +                reg = <0>;
 +                spi-max-frequency = <10000000>;
@@ -42,21 +48,29 @@ index 6d3f68c872e4..f678a16ac3fb 100755
 +        };
 +};
 +
+ /* SDIO */
  &usdhc1 {
-	pinctrl-names = "default", "state_100mhz", "state_200mhz";
-	pinctrl-0 = <&pinctrl_usdhc1>;
-@@ -856,7 +870,6 @@
-			MX8MQ_IOMUXC_NAND_READY_B_GPIO3_IO16		0x19
-			MX8MQ_IOMUXC_NAND_WE_B_GPIO3_IO17		0x19
-			MX8MQ_IOMUXC_NAND_WP_B_GPIO3_IO18		0x19
--			MX8MQ_IOMUXC_GPIO1_IO08_GPIO1_IO8		0xd6
-			MX8MQ_IOMUXC_GPIO1_IO00_ANAMIX_REF_CLK_32K	0x16
-		>;
-	};
-@@ -873,6 +886,23 @@
-                 >;
-         };
-
+ 	#address-cells = <0x1>;
+@@ -731,15 +739,6 @@
+ 		>;
+ 	};
+ 
+-	pinctrl_ecspi2: ecspi2grp {
+-		fsl,pins = <
+-			MX8MQ_IOMUXC_ECSPI2_SCLK_ECSPI2_SCLK		0x16
+-			MX8MQ_IOMUXC_ECSPI2_MOSI_ECSPI2_MOSI		0x16
+-			MX8MQ_IOMUXC_ECSPI2_MISO_ECSPI2_MISO		0x16
+-			MX8MQ_IOMUXC_ECSPI2_SS0_ECSPI2_SS0		0x16
+-		>;
+-	};
+-
+ 	pinctrl_fec1: fec1grp {
+ 		fsl,pins = <
+ 			MX8MQ_IOMUXC_ENET_MDC_ENET1_MDC			0x4
+@@ -933,6 +932,23 @@
+ 		>;
+ 	};
+ 
 +        pinctrl_ecspi2: ecspi2grp {/* zigbee spi interface */
 +                fsl,pins = <
 +                        MX8MQ_IOMUXC_ECSPI2_SCLK_ECSPI2_SCLK  0x049
@@ -74,46 +88,39 @@ index 6d3f68c872e4..f678a16ac3fb 100755
 +                >;
 +        };
 +
-	pinctrl_buck2: vddarmgrp {
-		fsl,pins = <
-			MX8MQ_IOMUXC_GPIO1_IO13_GPIO1_IO13		0x19
-@@ -901,7 +931,6 @@
-
-	pinctrl_csi_rst: csi_rst_grp {
-		fsl,pins = <
--			MX8MQ_IOMUXC_GPIO1_IO06_GPIO1_IO6		0x19
-			MX8MQ_IOMUXC_GPIO1_IO15_CCMSRCGPCMIX_CLKO2	0x59
-		>;
-	};
-@@ -1086,7 +1115,6 @@
-	pinctrl_spdif1: spdif1grp {
-		fsl,pins = <
-			MX8MQ_IOMUXC_SPDIF_TX_SPDIF1_OUT	0xd6
--			MX8MQ_IOMUXC_SPDIF_RX_SPDIF1_IN         0xd6 /*USED IN ZIGBEE*/
-		>;
-	};
-
+ 	pinctrl_ss_sel: usb3ssgrp{
+ 		fsl,pins = <
+ 			MX8MQ_IOMUXC_NAND_RE_B_GPIO3_IO15		0x16
+@@ -942,7 +958,6 @@
+ 	pinctrl_spdif1: spdif1grp {
+ 		fsl,pins = <
+ 			MX8MQ_IOMUXC_SPDIF_TX_SPDIF1_OUT	0xd6
+-			MX8MQ_IOMUXC_SPDIF_RX_SPDIF1_IN		0xd6 /*USED IN ZIGBEE*/
+ 		>;
+ 	};
+ 
 diff --git a/arch/arm64/boot/dts/freescale/imx8mq.dtsi b/arch/arm64/boot/dts/freescale/imx8mq.dtsi
-index 237464006787..f08620a41c10 100755
+index 9f15c03b3..8cd660a22 100755
 --- a/arch/arm64/boot/dts/freescale/imx8mq.dtsi
 +++ b/arch/arm64/boot/dts/freescale/imx8mq.dtsi
-@@ -831,7 +831,7 @@
-			ecspi1: spi@30820000 {
-				#address-cells = <1>;
-				#size-cells = <0>;
+@@ -858,7 +858,7 @@
+ 			ecspi1: spi@30820000 {
+ 				#address-cells = <1>;
+ 				#size-cells = <0>;
 -				compatible = "fsl,imx8mq-ecspi", "fsl,imx51-ecspi";
 +				compatible = "fsl,imx8mq-ecspi", "fsl,imx51-ecspi", "fsl,imx6ul-ecspi";
-				reg = <0x30820000 0x10000>;
-				interrupts = <GIC_SPI 31 IRQ_TYPE_LEVEL_HIGH>;
-				clocks = <&clk IMX8MQ_CLK_ECSPI1_ROOT>,
-@@ -843,7 +843,7 @@
-			ecspi2: spi@30830000 {
-				#address-cells = <1>;
-				#size-cells = <0>;
+ 				reg = <0x30820000 0x10000>;
+ 				interrupts = <GIC_SPI 31 IRQ_TYPE_LEVEL_HIGH>;
+ 				clocks = <&clk IMX8MQ_CLK_ECSPI1_ROOT>,
+@@ -870,7 +870,7 @@
+ 			ecspi2: spi@30830000 {
+ 				#address-cells = <1>;
+ 				#size-cells = <0>;
 -				compatible = "fsl,imx8mq-ecspi", "fsl,imx51-ecspi";
 +				compatible = "fsl,imx8mq-ecspi", "fsl,imx51-ecspi", "fsl,imx6ul-ecspi";
-				reg = <0x30830000 0x10000>;
-				interrupts = <GIC_SPI 32 IRQ_TYPE_LEVEL_HIGH>;
-				clocks = <&clk IMX8MQ_CLK_ECSPI2_ROOT>,
---
+ 				reg = <0x30830000 0x10000>;
+ 				interrupts = <GIC_SPI 32 IRQ_TYPE_LEVEL_HIGH>;
+ 				clocks = <&clk IMX8MQ_CLK_ECSPI2_ROOT>,
+-- 
 2.17.1
+

@@ -1,0 +1,149 @@
+From c25aeee68d3a9e01a3868301a9238c8a4eb786d8 Mon Sep 17 00:00:00 2001
+From: Tejas Patel <tejas.patel1@einfochips.com>
+Date: Tue, 19 Oct 2021 14:35:31 +0530
+Subject: [PATCH 07/16] IMX8 THOR96: Enable Native HDMI
+
+Change-Id: Ifc66b6bf4e0965ff0d28ea37a494356dcd5772ee
+Signed-off-by: Tejas Patel <tejas.patel1@einfochips.com>
+Signed-off-by: Tanvi Chauhan <tanvi.chauhan@einfochips.com>
+
+diff --git a/arch/arm64/boot/dts/freescale/imx8mq-thor96.dts b/arch/arm64/boot/dts/freescale/imx8mq-thor96.dts
+index f87030a9c..e89acd458 100644
+--- a/arch/arm64/boot/dts/freescale/imx8mq-thor96.dts
++++ b/arch/arm64/boot/dts/freescale/imx8mq-thor96.dts
+@@ -84,6 +84,38 @@
+ 		#reset-cells = <0>;
+ 	};
+ 
++	sound-hdmi {
++		compatible = "fsl,imx8mq-evk-cdnhdmi",
++				"fsl,imx-audio-cdnhdmi";
++		model = "imx-audio-hdmi";
++		audio-cpu = <&sai4>;
++		protocol = <1>;
++		hdmi-out;
++		constraint-rate = <44100>,
++				<88200>,
++				<176400>,
++				<32000>,
++				<48000>,
++				<96000>,
++				<192000>;
++		status = "okay";
++	};
++
++	sound-spdif {
++		compatible = "fsl,imx-audio-spdif";
++		model = "imx-spdif";
++		spdif-controller = <&spdif1>;
++		spdif-out;
++		spdif-in;
++	};
++
++	sound-hdmi-arc {
++		compatible = "fsl,imx-audio-spdif";
++		model = "imx-hdmi-arc";
++		spdif-controller = <&spdif2>;
++		spdif-in;
++	};
++
+ 	reg_usdhc1_vmmc: reg-usdhc1-vmmc {
+ 		compatible = "regulator-fixed";
+ 		regulator-name = "VDD_3V3";
+@@ -247,6 +279,42 @@
+ 	};
+ };
+ 
++&sai4 {
++	assigned-clocks = <&clk IMX8MQ_CLK_SAI4>;
++	assigned-clock-parents = <&clk IMX8MQ_AUDIO_PLL1_OUT>;
++	assigned-clock-rates = <24576000>;
++	clocks = <&clk IMX8MQ_CLK_SAI4_IPG>, <&clk IMX8MQ_CLK_DUMMY>,
++		<&clk IMX8MQ_CLK_SAI4_ROOT>, <&clk IMX8MQ_CLK_DUMMY>,
++		<&clk IMX8MQ_CLK_DUMMY>, <&clk IMX8MQ_AUDIO_PLL1_OUT>,
++		<&clk IMX8MQ_AUDIO_PLL2_OUT>;
++	clock-names = "bus", "mclk0", "mclk1", "mclk2", "mclk3", "pll8k", "pll11k";
++	status = "okay";
++};
++
++&spdif1 {
++	pinctrl-names = "default";
++	pinctrl-0 = <&pinctrl_spdif1>;
++	assigned-clocks = <&clk IMX8MQ_CLK_SPDIF1>;
++	assigned-clock-parents = <&clk IMX8MQ_AUDIO_PLL1_OUT>;
++	assigned-clock-rates = <24576000>;
++	clocks = <&clk IMX8MQ_CLK_IPG_ROOT>, <&clk IMX8MQ_CLK_25M>,
++		<&clk IMX8MQ_CLK_SPDIF1>, <&clk IMX8MQ_CLK_DUMMY>,
++		<&clk IMX8MQ_CLK_DUMMY>, <&clk IMX8MQ_CLK_DUMMY>,
++		<&clk IMX8MQ_CLK_IPG_ROOT>, <&clk IMX8MQ_CLK_DUMMY>,
++		<&clk IMX8MQ_CLK_DUMMY>, <&clk IMX8MQ_CLK_DUMMY>,
++		<&clk IMX8MQ_AUDIO_PLL1_OUT>, <&clk IMX8MQ_AUDIO_PLL2_OUT>;
++	clock-names = "core", "rxtx0", "rxtx1", "rxtx2", "rxtx3", "rxtx4",
++		      "rxtx5", "rxtx6", "rxtx7", "spba", "pll8k", "pll11k";
++	status = "okay";
++};
++
++&spdif2 {
++	assigned-clocks = <&clk IMX8MQ_CLK_SPDIF2>;
++	assigned-clock-parents = <&clk IMX8MQ_AUDIO_PLL1_OUT>;
++	assigned-clock-rates = <24576000>;
++	status = "okay";
++};
++
+ /* LS-I2C1 */
+ &i2c2 {
+ 	clock-frequency = <100000>;
+@@ -649,6 +717,13 @@
+ 		>;
+ 	};
+ 
++	pinctrl_spdif1: spdif1grp {
++		fsl,pins = <
++			MX8MQ_IOMUXC_SPDIF_TX_SPDIF1_OUT	0xd6
++			MX8MQ_IOMUXC_SPDIF_RX_SPDIF1_IN		0xd6
++		>;
++	};
++
+ 	pinctrl_wdog: wdoggrp {
+ 		fsl,pins = <
+ 			MX8MQ_IOMUXC_GPIO1_IO02_WDOG1_WDOG_B		0xc6
+@@ -661,3 +736,36 @@
+ 		>;
+ 	};
+ };
++
++&vpu {
++	status = "okay";
++};
++
++&gpu3d {
++	status = "okay";
++};
++
++&irqsteer {
++	status = "okay";
++};
++
++&dcss {
++	status = "okay";
++
++	port@0 {
++		dcss_out: endpoint {
++			  remote-endpoint = <&hdmi_in>;
++		};
++	};
++};
++
++&hdmi {
++	compatible = "cdn,imx8mq-hdmi";
++	lane-mapping = <0xe4>;
++	status = "okay";
++	port@1 {
++		hdmi_in: endpoint {
++			remote-endpoint = <&dcss_out>;
++		};
++	};
++};
+-- 
+2.17.1
+

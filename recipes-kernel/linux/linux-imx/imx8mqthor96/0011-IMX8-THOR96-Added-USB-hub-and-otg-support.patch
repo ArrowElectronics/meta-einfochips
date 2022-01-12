@@ -1,48 +1,35 @@
-From 721dc3aa00fc1ac0646a6dfa4be279e09c2b0c26 Mon Sep 17 00:00:00 2001
-From: "darshak.patel" <darshak.patel@einfochips.com>
-Date: Thu, 10 Dec 2020 15:27:09 +0530
-Subject: [PATCH 09/18] IMX8 THOR96: Added USB hub and otg support
+From af7caeea63db34a0bc91025ac84dfe7e4ef758be Mon Sep 17 00:00:00 2001
+From: Tejas Patel <tejas.patel1@einfochips.com>
+Date: Tue, 19 Oct 2021 14:46:17 +0530
+Subject: [PATCH 11/16] IMX8 THOR96: Added USB hub and otg support
 
 1.Added otg device and host support for micro-ab usb as otg can support only one at a time
 2.Added support for usb hub
-3.Added defconfig changes for USB OTG
----
- arch/arm64/boot/dts/freescale/Makefile        |   5 +-
- .../dts/freescale/imx8mq-thor96-otg-host.dts  |  26 ++
- .../boot/dts/freescale/imx8mq-thor96.dts      |  37 ++-
- drivers/extcon/Kconfig                        |   8 +
- drivers/extcon/Makefile                       |   1 +
- drivers/extcon/extcon-usb-gpio-vbus.c         | 280 ++++++++++++++++++
- drivers/usb/dwc3/dwc3-of-simple.c             |  42 +++
- 7 files changed, 375 insertions(+), 24 deletions(-)
- create mode 100644 arch/arm64/boot/dts/freescale/imx8mq-thor96-otg-host.dts
- create mode 100644 drivers/extcon/extcon-usb-gpio-vbus.c
+
+Change-Id: I08fce97e8a7486c4cff2612d8506031879ce0725
+Signed-off-by: Tejas Patel <tejas.patel1@einfochips.com>
+Signed-off-by: Tanvi Chauhan <tanvi.chauhan@einfochips.com>
 
 diff --git a/arch/arm64/boot/dts/freescale/Makefile b/arch/arm64/boot/dts/freescale/Makefile
-index 3edfad504661..0af6cc844984 100644
+index dd47c01c9..cabf63cb9 100644
 --- a/arch/arm64/boot/dts/freescale/Makefile
 +++ b/arch/arm64/boot/dts/freescale/Makefile
-@@ -72,11 +72,8 @@ dtb-$(CONFIG_ARCH_MXC) += imx8mp-evk.dtb imx8mp-evk-root.dtb imx8mp-evk-inmate.d
- dtb-$(CONFIG_ARCH_MXC) += imx8mq-evk.dtb imx8mq-evk-rpmsg.dtb imx8mq-evk-pcie1-m2.dtb imx8mq-evk-usd-wifi.dtb \
-			  imx8mq-evk-usdhc2-m2.dtb imx8mq-evk-pcie-ep.dtb
- dtb-$(CONFIG_ARCH_MXC) += imx8mq-evk-ak4497.dtb imx8mq-evk-audio-tdm.dtb imx8mq-evk-pdm.dtb
--dtb-$(CONFIG_ARCH_MXC) += imx8mq-evk-root.dtb imx8mq-evk-inmate.dtb
--dtb-$(CONFIG_ARCH_MXC) += imx8mq-evk-lcdif-rm67191.dtb imx8mq-evk-lcdif-adv7535.dtb
- dtb-$(CONFIG_ARCH_MXC) += imx8mq-hummingboard-pulse.dtb
--dtb-$(CONFIG_ARCH_MXC) += imx8mq-evk-dcss-rm67191.dtb imx8mq-evk-dcss-adv7535.dtb
--dtb-$(CONFIG_ARCH_MXC) += imx8mq-evk-dual-display.dtb
+@@ -115,6 +115,7 @@ dtb-$(CONFIG_ARCH_MXC) += imx8mq-hummingboard-pulse.dtb
+ dtb-$(CONFIG_ARCH_MXC) += imx8mq-evk-dcss-rm67191.dtb imx8mq-evk-dcss-adv7535.dtb
+ dtb-$(CONFIG_ARCH_MXC) += imx8mq-evk-dcss-rm67199.dtb
+ dtb-$(CONFIG_ARCH_MXC) += imx8mq-evk-dual-display.dtb
 +dtb-$(CONFIG_ARCH_MXC) += imx8mq-thor96-otg-host.dtb
  dtb-$(CONFIG_ARCH_MXC) += imx8mq-librem5-devkit.dtb
- dtb-$(CONFIG_ARCH_MXC) += imx8mq-nitrogen.dtb
- dtb-$(CONFIG_ARCH_MXC) += imx8mq-pico-pi.dtb
+ dtb-$(CONFIG_ARCH_MXC) += imx8mq-librem5-r2.dtb
+ dtb-$(CONFIG_ARCH_MXC) += imx8mq-librem5-r3.dtb
 diff --git a/arch/arm64/boot/dts/freescale/imx8mq-thor96-otg-host.dts b/arch/arm64/boot/dts/freescale/imx8mq-thor96-otg-host.dts
 new file mode 100644
-index 000000000000..6f6aede7d3aa
+index 000000000..26da49a68
 --- /dev/null
 +++ b/arch/arm64/boot/dts/freescale/imx8mq-thor96-otg-host.dts
-@@ -0,0 +1,26 @@
+@@ -0,0 +1,30 @@
 +/*
-+ * Copyright 2017 NXP
++ * Copyright 2021 Einfochips
 + *
 + * This program is free software; you can redistribute it and/or
 + * modify it under the terms of the GNU General Public License
@@ -57,7 +44,12 @@ index 000000000000..6f6aede7d3aa
 +
 +#include "imx8mq-thor96.dts"
 +
++&extcon_usb0 {
++	status = "disabled";
++};
++
 +&usb_dwc3_0 {
++       /delete-property/ extcon;
 +
 +       dr_mode = "host";
 +       hnp-disable;
@@ -66,84 +58,149 @@ index 000000000000..6f6aede7d3aa
 +
 +       status = "okay";
 +};
-+
 diff --git a/arch/arm64/boot/dts/freescale/imx8mq-thor96.dts b/arch/arm64/boot/dts/freescale/imx8mq-thor96.dts
-index 50953ea0e872..6d3f68c872e4 100755
+index b0768908a..75dfd9d9b 100644
 --- a/arch/arm64/boot/dts/freescale/imx8mq-thor96.dts
 +++ b/arch/arm64/boot/dts/freescale/imx8mq-thor96.dts
-@@ -184,6 +184,12 @@
-		#reset-cells = <0>;
-	};
-
+@@ -6,6 +6,7 @@
+ 
+ /dts-v1/;
+ 
++#include <dt-bindings/usb/pd.h>
+ #include "imx8mq.dtsi"
+ 
+ / {
+@@ -84,6 +85,12 @@
+ 		#reset-cells = <0>;
+ 	};
+ 
 +        extcon_usb0: extcon_usb0 {
 +                compatible = "linux,extcon-usb-gpio-vbus";
 +                id-gpio = <&gpio1 10 GPIO_ACTIVE_HIGH>;
 +                vbus-gpio = <&gpio1 12 GPIO_ACTIVE_HIGH>;
 +        };
 +
-	sound-hdmi {
-		compatible = "fsl,imx8mq-evk-cdnhdmi",
-				"fsl,imx-audio-cdnhdmi";
-@@ -542,12 +548,6 @@
-		interrupt-parent = <&gpio3>;
-		interrupts = <3 8>;
-
--		port {
--			typec_dr_sw: endpoint {
--				remote-endpoint = <&usb3_drd_sw>;
--			};
--		};
--
-		usb_con: connector {
-			compatible = "usb-c-connector";
-			label = "USB-C";
-@@ -781,20 +781,11 @@
+ 	sound-hdmi {
+ 		compatible = "fsl,imx8mq-evk-cdnhdmi",
+ 				"fsl,imx-audio-cdnhdmi";
+@@ -124,6 +131,20 @@
+ 		status = "okay";
+ 	};
+ 
++	ptn36043 {
++		compatible = "nxp,ptn36043";
++		pinctrl-names = "default";
++		pinctrl-0 = <&pinctrl_ss_sel>;
++		switch-gpios = <&gpio3 15 GPIO_ACTIVE_HIGH>;
++		orientation-switch;
++
++		port {
++			usb3_data_ss: endpoint {
++				remote-endpoint = <&typec_con_ss>;
++			};
++		};
++	};
++
+ 	reg_usdhc1_vmmc: reg-usdhc1-vmmc {
+ 		compatible = "regulator-fixed";
+ 		regulator-name = "VDD_3V3";
+@@ -350,6 +371,38 @@
+                 adi,dsi-lanes = <4>;
+                 status = "okay";
+         };
++
++	ptn5110: tcpc@50 {
++		compatible = "nxp,ptn5110";
++		pinctrl-names = "default";
++		reg = <0x50>;
++		interrupt-parent = <&gpio3>;
++		interrupts = <3 8>;
++		usb_con: connector {
++			compatible = "usb-c-connector";
++			label = "USB-C";
++			power-role = "dual";
++			data-role = "dual";
++			try-power-role = "sink";
++			source-pdos = <PDO_FIXED(5000, 3000, PDO_FIXED_USB_COMM)>;
++			sink-pdos = <PDO_FIXED(5000, 3000, PDO_FIXED_USB_COMM)
++				     PDO_VAR(5000, 20000, 3000)>;
++			op-sink-microwatt = <15000000>;
++			self-powered;
++
++			ports {
++				#address-cells = <1>;
++				#size-cells = <0>;
++
++				port@1 {
++					reg = <1>;
++					typec_con_ss: endpoint {
++						remote-endpoint = <&usb3_data_ss>;
++					};
++				};
++			};
++		};
++	};
  };
-
- &usb_dwc3_0 {
--	dr_mode = "otg";
--	hnp-disable;
--	srp-disable;
--	adp-disable;
--	usb-role-switch;
--	snps,dis-u1-entry-quirk;
--	snps,dis-u2-entry-quirk;
--	status = "okay";
--
--	port {
--		usb3_drd_sw: endpoint {
--			remote-endpoint = <&typec_dr_sw>;
--		};
--	};
+ 
+ &sai1 {
+@@ -555,10 +608,23 @@
+ 	status = "okay";
+ };
+ 
++&usb3_phy0 {
++        vbus-power-supply = <&ptn5110>;
++        status = "okay";
++};
++
+ &usb3_phy1 {
+ 	status = "okay";
+ };
+ 
++&usb_dwc3_0 {
 +        extcon = <&extcon_usb0>;
 +        pinctrl-names = "default";
 +        pinctrl-0 = <&pinctrl_usbotg0>;
 +        dr_mode = "peripheral";
 +        status = "okay";
- };
-
- &usb3_phy1 {
-@@ -1221,6 +1212,12 @@
-		>;
-	};
-
++};
++
+ &usb_dwc3_1 {
+ 	dr_mode = "host";
+ 	status = "okay";
+@@ -867,6 +933,12 @@
+ 		>;
+ 	};
+ 
++	pinctrl_ss_sel: usb3ssgrp{
++		fsl,pins = <
++			MX8MQ_IOMUXC_NAND_RE_B_GPIO3_IO15		0x16
++		>;
++	};
++
+ 	pinctrl_spdif1: spdif1grp {
+ 		fsl,pins = <
+ 			MX8MQ_IOMUXC_SPDIF_TX_SPDIF1_OUT	0xd6
+@@ -880,6 +952,12 @@
+ 		>;
+ 	};
+ 
 +        pinctrl_usbotg0: usbotggrp {
 +                fsl,pins = <
 +                        MX8MQ_IOMUXC_GPIO1_IO10_GPIO1_IO10              0x17059
 +                >;
 +        };
 +
-	pinctrl_wifi_reset: wifiresetgrp {
-		fsl,pins = <
-			MX8MQ_IOMUXC_UART4_TXD_GPIO5_IO29		0x16
+ 	pinctrl_wifi_reg_on: wifiregongrp {
+ 		fsl,pins = <
+ 			MX8MQ_IOMUXC_NAND_CE2_B_GPIO3_IO3		0x17059
 diff --git a/drivers/extcon/Kconfig b/drivers/extcon/Kconfig
-index aac507bff135..56b3bf0ad10d 100644
+index aac507bff..56b3bf0ad 100644
 --- a/drivers/extcon/Kconfig
 +++ b/drivers/extcon/Kconfig
 @@ -179,6 +179,14 @@ config EXTCON_USB_GPIO
-	  Say Y here to enable GPIO based USB cable detection extcon support.
-	  Used typically if GPIO is used for USB ID pin detection.
-
+ 	  Say Y here to enable GPIO based USB cable detection extcon support.
+ 	  Used typically if GPIO is used for USB ID pin detection.
+ 
 +config EXTCON_USB_VBUS_GPIO
 +	tristate "USB GPIO vbus extcon support"
 +	depends on GPIOLIB || COMPILE_TEST
@@ -153,10 +210,10 @@ index aac507bff135..56b3bf0ad10d 100644
 +	  ID pin detection and Vbus pin set.
 +
  config EXTCON_USBC_CROS_EC
-	tristate "ChromeOS Embedded Controller EXTCON support"
-	depends on CROS_EC
+ 	tristate "ChromeOS Embedded Controller EXTCON support"
+ 	depends on CROS_EC
 diff --git a/drivers/extcon/Makefile b/drivers/extcon/Makefile
-index 52096fd8a216..2ef9d0f6d8fd 100644
+index 52096fd8a..2ef9d0f6d 100644
 --- a/drivers/extcon/Makefile
 +++ b/drivers/extcon/Makefile
 @@ -24,4 +24,5 @@ obj-$(CONFIG_EXTCON_QCOM_SPMI_MISC) += extcon-qcom-spmi-misc.o
@@ -167,10 +224,10 @@ index 52096fd8a216..2ef9d0f6d8fd 100644
  obj-$(CONFIG_EXTCON_USBC_CROS_EC) += extcon-usbc-cros-ec.o
 diff --git a/drivers/extcon/extcon-usb-gpio-vbus.c b/drivers/extcon/extcon-usb-gpio-vbus.c
 new file mode 100644
-index 000000000000..4a154f15b717
+index 000000000..ea9757cdf
 --- /dev/null
 +++ b/drivers/extcon/extcon-usb-gpio-vbus.c
-@@ -0,0 +1,280 @@
+@@ -0,0 +1,281 @@
 +/**
 + * drivers/extcon/extcon-usb-gpio.c - USB GPIO extcon driver
 + *
@@ -188,6 +245,7 @@ index 000000000000..4a154f15b717
 + */
 +
 +#include <linux/extcon.h>
++#include <linux/extcon-provider.h>
 +#include <linux/gpio.h>
 +#include <linux/gpio/consumer.h>
 +#include <linux/init.h>
@@ -452,7 +510,7 @@ index 000000000000..4a154f15b717
 +MODULE_DESCRIPTION("USB GPIO extcon driver");
 +MODULE_LICENSE("GPL v2");
 diff --git a/drivers/usb/dwc3/dwc3-of-simple.c b/drivers/usb/dwc3/dwc3-of-simple.c
-index bdac3e7d7b18..293fe9630896 100644
+index e62ecd22b..0de8d40a7 100644
 --- a/drivers/usb/dwc3/dwc3-of-simple.c
 +++ b/drivers/usb/dwc3/dwc3-of-simple.c
 @@ -21,6 +21,11 @@
@@ -464,13 +522,13 @@ index bdac3e7d7b18..293fe9630896 100644
 +
 +/*reset gpio5_io05 */
 +#define IMX8HMI_USB_HUB_RESET_GPIO 133
-
+ 
  struct dwc3_of_simple {
-	struct device		*dev;
-@@ -31,6 +36,34 @@ struct dwc3_of_simple {
-	bool			need_reset;
+ 	struct device		*dev;
+@@ -30,6 +35,34 @@ struct dwc3_of_simple {
+ 	bool			need_reset;
  };
-
+ 
 +static int usb_hub_reset(void)
 +{
 +	int ret;
@@ -501,11 +559,11 @@ index bdac3e7d7b18..293fe9630896 100644
 +
  static int dwc3_of_simple_probe(struct platform_device *pdev)
  {
-	struct dwc3_of_simple	*simple;
-@@ -91,6 +124,15 @@ static int dwc3_of_simple_probe(struct platform_device *pdev)
-	if (ret)
-		goto err_clk_put;
-
+ 	struct dwc3_of_simple	*simple;
+@@ -77,6 +110,15 @@ static int dwc3_of_simple_probe(struct platform_device *pdev)
+ 	if (ret)
+ 		goto err_clk_put;
+ 
 +	ret = usb_hub_reset();
 +	if (ret) {
 +		printk(KERN_ERR "%s:%d ei=== usb hub reset failed with ret=%d", __func__, __LINE__, ret);
@@ -515,8 +573,9 @@ index bdac3e7d7b18..293fe9630896 100644
 +	}
 +
 +
-	pm_runtime_set_active(dev);
-	pm_runtime_enable(dev);
-	pm_runtime_get_sync(dev);
---
+ 	pm_runtime_set_active(dev);
+ 	pm_runtime_enable(dev);
+ 	pm_runtime_get_sync(dev);
+-- 
 2.17.1
+

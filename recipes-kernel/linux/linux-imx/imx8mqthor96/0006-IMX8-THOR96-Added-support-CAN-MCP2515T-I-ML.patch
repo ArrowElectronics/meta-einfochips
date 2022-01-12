@@ -1,7 +1,7 @@
-From 49f098e9e27ed2c6d31c4ea62cbbc9ff426e54e9 Mon Sep 17 00:00:00 2001
-From: "darshak.patel" <darshak.patel@einfochips.com>
-Date: Wed, 9 Dec 2020 17:01:50 +0530
-Subject: [PATCH 04/18] IMX8 THOR96: Added support CAN MCP2515T-I/ML
+From ee2d7aa6c41dbc19fd668d269af84efa59ba482b Mon Sep 17 00:00:00 2001
+From: Tejas Patel <tejas.patel1@einfochips.com>
+Date: Tue, 19 Oct 2021 14:34:56 +0530
+Subject: [PATCH 06/16] IMX8 THOR96: Added support CAN MCP2515T-I/ML
 
 Commands for testing:
 $ ip link set can0 type can bitrate 125000;ifconfig can0 up
@@ -11,19 +11,19 @@ $ candump can0 &
 
 Configure another board as sender and send data
 $ cansend can0 18FC2A00#0100000000000000
----
- .../boot/dts/freescale/imx8mq-thor96.dts      | 49 ++++++++++++++++++-
- arch/arm64/configs/defconfig                  |  5 ++
- 2 files changed, 53 insertions(+), 1 deletion(-)
+
+Change-Id: I8f810e20c5a2f22ceef9f43d7b080d347ad425dd
+Signed-off-by: Tejas Patel <tejas.patel1@einfochips.com>
+Signed-off-by: Tanvi Chauhan <tanvi.chauhan@einfochips.com>
 
 diff --git a/arch/arm64/boot/dts/freescale/imx8mq-thor96.dts b/arch/arm64/boot/dts/freescale/imx8mq-thor96.dts
-index a967c16bdae9..52794f31c7dd 100755
+index 8f3b9e2f9..f87030a9c 100644
 --- a/arch/arm64/boot/dts/freescale/imx8mq-thor96.dts
 +++ b/arch/arm64/boot/dts/freescale/imx8mq-thor96.dts
-@@ -17,6 +17,14 @@
-		stdout-path = &uart1;
-	};
-
+@@ -16,6 +16,14 @@
+ 		stdout-path = &uart1;
+ 	};
+ 
 +	clocks {
 +		clk24M: can_clock {
 +			compatible = "fixed-clock";
@@ -32,13 +32,14 @@ index a967c16bdae9..52794f31c7dd 100755
 +		};
 +	};
 +
-	memory@40000000 {
-		device_type = "memory";
-		reg = <0x00000000 0x40000000 0 0xc0000000>;
-@@ -168,6 +176,14 @@
-		};
-	};
-
+ 	memory@40000000 {
+ 		device_type = "memory";
+ 		reg = <0x00000000 0x40000000 0 0x80000000>;
+@@ -67,6 +75,15 @@
+ 		};
+ 	};
+ 
++
 +	can_reset: can-reset {
 +		compatible = "gpio-reset";
 +		reset-gpios = <&gpio3 25 GPIO_ACTIVE_LOW>;
@@ -47,13 +48,13 @@ index a967c16bdae9..52794f31c7dd 100755
 +		#reset-cells = <0>;
 +	};
 +
-	sound-hdmi {
-		compatible = "fsl,imx8mq-evk-cdnhdmi",
-				"fsl,imx-audio-cdnhdmi";
-@@ -775,6 +791,26 @@
-	status = "okay";
+ 	reg_usdhc1_vmmc: reg-usdhc1-vmmc {
+ 		compatible = "regulator-fixed";
+ 		regulator-name = "VDD_3V3";
+@@ -352,6 +369,26 @@
+ 	status = "okay";
  };
-
+ 
 +&ecspi1 {
 +		pinctrl-names = "default";
 +		pinctrl-0 = <&pinctrl_ecspi1>;
@@ -74,13 +75,13 @@ index a967c16bdae9..52794f31c7dd 100755
 +	};
 +};
 +
+ /* SDIO */
  &usdhc1 {
-	pinctrl-names = "default", "state_100mhz", "state_200mhz";
-	pinctrl-0 = <&pinctrl_usdhc1>;
-@@ -819,6 +855,18 @@
-		>;
-	};
-
+ 	#address-cells = <0x1>;
+@@ -400,6 +437,18 @@
+ };
+ 
+ &iomuxc {
 +        pinctrl_ecspi1: ecspi1grp { /*can spi interface*/
 +                fsl,pins = <
 +                        MX8MQ_IOMUXC_ECSPI1_SCLK_ECSPI1_SCLK    0x16
@@ -93,22 +94,22 @@ index a967c16bdae9..52794f31c7dd 100755
 +                >;
 +        };
 +
-	pinctrl_buck2: vddarmgrp {
-		fsl,pins = <
-			MX8MQ_IOMUXC_GPIO1_IO13_GPIO1_IO13		0x19
-@@ -1001,7 +1049,6 @@
-
-	pinctrl_sai5: sai5grp {
-		fsl,pins = <
--			MX8MQ_IOMUXC_SAI5_MCLK_SAI5_MCLK	0xd6
-			MX8MQ_IOMUXC_SAI5_RXC_SAI5_RX_BCLK	0xd6
-			MX8MQ_IOMUXC_SAI5_RXFS_SAI5_RX_SYNC	0xd6
-			MX8MQ_IOMUXC_SAI5_RXD0_SAI5_RX_DATA0	0xd6
+ 	pinctrl_bt_gpios: btgpiosgrp {
+ 		fsl,pins = <
+ 			MX8MQ_IOMUXC_SAI5_RXD1_GPIO3_IO22		0x19
+@@ -490,7 +539,6 @@
+ 			MX8MQ_IOMUXC_NAND_DATA01_QSPI_A_DATA1		0x82
+ 			MX8MQ_IOMUXC_NAND_DATA02_QSPI_A_DATA2		0x82
+ 			MX8MQ_IOMUXC_NAND_DATA03_QSPI_A_DATA3		0x82
+-
+ 		>;
+ 	};
+ 
 diff --git a/arch/arm64/configs/defconfig b/arch/arm64/configs/defconfig
-index 5713029b612a..04997b1d1f74 100644
+index 396ac92bc..e4d5212c1 100644
 --- a/arch/arm64/configs/defconfig
 +++ b/arch/arm64/configs/defconfig
-@@ -119,6 +119,10 @@ CONFIG_CRYPTO_AES_ARM64_CE_CCM=y
+@@ -122,6 +122,10 @@ CONFIG_CRYPTO_AES_ARM64_CE_CCM=y
  CONFIG_CRYPTO_AES_ARM64_CE_BLK=y
  CONFIG_CRYPTO_CHACHA20_NEON=m
  CONFIG_CRYPTO_AES_ARM64_BS=m
@@ -119,13 +120,14 @@ index 5713029b612a..04997b1d1f74 100644
  CONFIG_JUMP_LABEL=y
  CONFIG_MODULES=y
  CONFIG_MODULE_UNLOAD=y
-@@ -167,6 +171,7 @@ CONFIG_QRTR_TUN=m
- CONFIG_BPF_JIT=y
+@@ -187,6 +191,7 @@ CONFIG_BPF_JIT=y
+ CONFIG_NET_PKTGEN=m
  CONFIG_CAN=m
  CONFIG_CAN_FLEXCAN=m
 +CONFIG_CAN_MCP251X=y
+ CONFIG_CAN_RCAR=m
+ CONFIG_CAN_RCAR_CANFD=m
  CONFIG_BT=y
- CONFIG_BT_RFCOMM=y
- CONFIG_BT_RFCOMM_TTY=y
---
+-- 
 2.17.1
+

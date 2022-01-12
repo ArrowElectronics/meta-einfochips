@@ -1,0 +1,78 @@
+From d0577cf01c9baf6e1846665263068068ef35c231 Mon Sep 17 00:00:00 2001
+From: Tejas Patel <tejas.patel1@einfochips.com>
+Date: Tue, 19 Oct 2021 11:53:38 +0530
+Subject: [PATCH 05/16] IMX8 THOR96: Enable support for NOR-SPI Flash
+ sst,w25q256
+
+Change-Id: I4982fb64dad965474cb35c779871dec230c74dec
+Signed-off-by: Tejas Patel <tejas.patel1@einfochips.com>
+Signed-off-by: Tanvi Chauhan <tanvi.chauhan@einfochips.com>
+
+diff --git a/arch/arm64/boot/dts/freescale/imx8mq-thor96.dts b/arch/arm64/boot/dts/freescale/imx8mq-thor96.dts
+index cd3f75a88..8f3b9e2f9 100644
+--- a/arch/arm64/boot/dts/freescale/imx8mq-thor96.dts
++++ b/arch/arm64/boot/dts/freescale/imx8mq-thor96.dts
+@@ -298,9 +298,11 @@
+ 	status = "okay";
+ 
+ 	flash@0 {
+-		compatible = "jedec,spi-nor";
++		compatible = "sst,w25q256";
+ 		spi-max-frequency = <100000000>;
+ 		reg = <0>;
++		spi-nor,ddr-quad-read-dummy = <4>;
++		status = "okay";
+ 	};
+ };
+ 
+diff --git a/drivers/mtd/spi-nor/core.c b/drivers/mtd/spi-nor/core.c
+index 7231ef22f..6b24af5bd 100644
+--- a/drivers/mtd/spi-nor/core.c
++++ b/drivers/mtd/spi-nor/core.c
+@@ -21,6 +21,7 @@
+ #include <linux/sched/task_stack.h>
+ #include <linux/spi/flash.h>
+ #include <linux/mtd/spi-nor.h>
++#include <linux/gpio.h>
+ 
+ #include "core.h"
+ 
+@@ -43,6 +44,9 @@
+ #define SPI_NOR_SRST_SLEEP_MIN 200
+ #define SPI_NOR_SRST_SLEEP_MAX 400
+ 
++#define OUT                                                    0
++#define IMX8THOR_NOR_CS_SW_GPIO                               64
++
+ /**
+  * spi_nor_get_cmd_ext() - Get the command opcode extension based on the
+  *			   extension type.
+@@ -3411,6 +3415,25 @@ int spi_nor_scan(struct spi_nor *nor, const char *name,
+ 	int ret;
+ 	int i;
+ 
++	printk("nor cs gpio val %d \n",IMX8THOR_NOR_CS_SW_GPIO);
++	if (!gpio_is_valid(IMX8THOR_NOR_CS_SW_GPIO)) {
++	        printk("invalid nor cs gpio, cannot switch mipi sw\n");
++	        return -ENODEV;
++	}
++
++	ret = gpio_request(IMX8THOR_NOR_CS_SW_GPIO, "nor_cs");
++	if (ret < 0) {
++	        printk("request nor cs failed, cannot nor cs sw: %d\n",ret);
++	        return ret;
++	}
++
++	gpio_direction_output(IMX8THOR_NOR_CS_SW_GPIO, OUT);
++	gpio_set_value(IMX8THOR_NOR_CS_SW_GPIO, 0);
++
++	printk("nor cs gpio low, nor cs sw\n");
++	printk("spi nor name %s\n",name);
++	printk("%s %d\n",__func__,__LINE__);
++
+ 	ret = spi_nor_check(nor);
+ 	if (ret)
+ 		return ret;
+-- 
+2.17.1
+
