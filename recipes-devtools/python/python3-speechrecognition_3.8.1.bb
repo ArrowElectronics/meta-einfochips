@@ -29,3 +29,8 @@ do_compile_prepend() {
     export LDFLAGS="$LDFLAGS -L${STAGING_LIBDIR}"
     export CFLAGS="$CFLAGS -I${STAGING_INCDIR}"
 }
+
+do_install_append() {
+       install -d ${D}/usr/bin
+       ln -s ${D}/usr/lib/python3.9/site-packages/speech_recognition/flac ${D}/usr/bin/flac
+}

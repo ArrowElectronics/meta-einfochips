@@ -1,9 +1,6 @@
 FILESEXTRAPATHS_append := "${THISDIR}"
 
 
-do_install_append () {
-        mv ${D}${sysconfdir}/mosquitto/mosquitto.conf.example ${D}${sysconfdir}/mosquitto/mosquitto.conf
-}
 
 
 FILES_${PN} += " \
