@@ -6,6 +6,7 @@ LICENSE = "CLOSED"
 SRC_URI = 	"file://thread \
 		 file://SAI1 \
 		 file://A2B \
+		 file://LTE \
 		"
 S = "${WORKDIR}"
 
@@ -25,6 +26,10 @@ do_install() {
 	cp -r ${S}/SAI1 ${D}/home/root/
 
 	install -m 0775 ${S}/A2B/A2B.tar.gz ${D}/home/root/A2B/
+
+	install -d ${D}/home/root/LTE
+        cp ${S}/LTE/lte_setup.sh ${D}/home/root/LTE/
+        chmod -R 775 ${D}/home/root/LTE/lte_setup.sh
 }
 
 FILES_${PN} += "/home/root/*"
