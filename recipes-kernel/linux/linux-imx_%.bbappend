@@ -5,7 +5,7 @@ PATCHTOOL = "git"
 
 FILESEXTRAPATHS_append := "${THISDIR}/linux-imx"
 
-SRC_URI_append_imx8mqthor96 += "file://0001-dts-imx8mq-thor96-Change-max-frequency-for-sd-card.patch \
+SRC_URI_append_imx8mqthor96 += "file://0001-imx8mq-thor96-Change-max-frequency-for-sd-card.patch \
 					file://0002-IMX8-THOR96-Added-support-for-thor96-board.patch \
 					file://0003-IMX8-THOR96-Enabled-Disable-DSI_SW_SEL.patch \
 					file://0004-IMX8-THOR96-Enable-EEPROM-AT24-Support.patch \

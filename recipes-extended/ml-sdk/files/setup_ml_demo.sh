@@ -16,14 +16,6 @@ pip3 install --upgrade pip
 pip install --upgrade pip
 MARKER_FILE="/opt/SetupCompleted"
 
-# Setup Internet connection
-sudo systemctl disable systemd-resolved.service
-sudo systemctl stop systemd-resolved.service
-sudo ln -sf /run/systemd/resolve/resolv.conf /etc/resolv.conf
-ls -l /etc/resolv.conf
-sudo systemctl enable systemd-resolved.service
-sudo systemctl start systemd-resolved.service
-
 # Setup scipy
 pip3 install scipy==1.5.4
 
