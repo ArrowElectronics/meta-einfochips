@@ -33,7 +33,7 @@ then
     exit 0
 fi
 
-pkgs='absl-py astunparse flatbuffers gast google-pasta h5py keras keras-preprocessing libclang numpy opt-einsum protobuf six tensorboard tensorflow-estimator termcolor typing-extensions wheel wrapt opencv-python'
+pkgs='absl-py astunparse flatbuffers gast google-pasta h5py keras keras-preprocessing libclang numpy opt-einsum protobuf six scikit-learn tensorboard tensorflow-estimator termcolor typing-extensions wheel wrapt opencv-python'
 
 for pkg in $pkgs; do
 	pip3 list | grep $pkg
@@ -95,23 +95,6 @@ if [ $? -ne 0 ]; then
     pip3 --no-cache-dir install ~/tensorflow_aarch64-2.7.0-cp39-cp39-linux_aarch64.whl
     if [ $? -ne 0 ]; then
         echo "tensorflow not install properly. Please manually install package or re-run script."
-        exit -1
-    fi
-fi
-
-python3 -c "import sklearn"
-
-if [ $? -ne 0 ]; then
-    echo "install python package : scikit-learn."
-    cd ~/scikit-learn-0.19.2/
-    if [ $? -ne 0 ]; then
-        echo "scikit-learn-0.19.2 directory not found in home folder"
-        exit -1
-    fi
-    
-    python3 setup.py install
-    if [ $? -ne 0 ]; then
-        echo "scikit-learn-0.19.2 not install properly. Please manually install package or re-run script."
         exit -1
     fi
 fi
