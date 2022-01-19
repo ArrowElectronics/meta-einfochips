@@ -31,15 +31,15 @@ class GracefulKiller:
 
 def load_graph(filename):
     """Unpersists graph from file as default graph."""
-    with tf.gfile.GFile(filename, 'rb') as f:
-        graph_def = tf.GraphDef()
+    with tf.io.gfile.GFile(filename, 'rb') as f:
+        graph_def = tf.compat.v1.GraphDef()
         graph_def.ParseFromString(f.read())
         tf.import_graph_def(graph_def, name='')
 
 
 def load_labels(filename):
     """Read in labels, one label per line."""
-    return [line.rstrip() for line in tf.gfile.GFile(filename)]
+    return [line.rstrip() for line in tf.io.gfile.GFile(filename)]
 
 
 def run_graph(wav_data):
@@ -119,18 +119,18 @@ def main():
 if __name__ == '__main__':
     """Loads the model and labels """
 
-    if not labels or not tf.gfile.Exists(labels):
-        tf.logging.fatal('Labels file does not exist %s', labels)
+    if not labels or not tf.io.gfile.exists(labels):
+        tf.io.logging.fatal('Labels file does not exist %s', labels)
 
-    if not graph or not tf.gfile.Exists(graph):
-        tf.logging.fatal('Graph file does not exist %s', graph)
+    if not graph or not tf.io.gfile.exists(graph):
+        tf.io.logging.fatal('Graph file does not exist %s', graph)
 
     labels_list = load_labels(labels)
 
     # load graph, which is stored in the default session
     load_graph(graph)
 
-    sess = tf.Session()
+    sess = tf.compat.v1.Session()
 
     # Input tensorflow layer
     softmax_tensor = sess.graph.get_tensor_by_name(output_name)

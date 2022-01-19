@@ -129,16 +129,15 @@ def get_session(use_640x480_sess=True):
 
 def run_inference_on_image(img_path, use_640x480_sess=True, use_qt_only=False, downscale_dens_map=False):
     persisted_sess = get_session(use_640x480_sess)
-    tf.reset_default_graph()
+    tf.compat.v1.reset_default_graph()
     persisted_sess_160x120.graph.as_default()
     set_image_resolution(use_640x480_sess)
     if use_640x480_sess:
          softmax_tensor = persisted_sess.graph.get_tensor_by_name(
-             'import/Relu_12:0')  # this is the max but output is in minus, but kinda correct
+             'Relu_12:0')  # this is the max but output is in minus, but kinda correct
     else:
         softmax_tensor = persisted_sess.graph.get_tensor_by_name(
-            '160x120/Relu_12:0')  # this is the max but output is in minus, but kinda correct
-
+            'Relu_12:0')  # this is the max but output is in minus, but kinda correct
     if use_qt_only:
         np_img_array, input_pixmap = get_image_qt(img_path)
     else:
@@ -154,9 +153,10 @@ def run_inference_on_image(img_path, use_640x480_sess=True, use_qt_only=False, d
     print("TF> inference STARTED")
     start = time.time()
     if use_640x480_sess:
-        output = persisted_sess.run(softmax_tensor, {'import/0:0': np_img_array})
+        #output = persisted_sess.run(softmax_tensor, {'import/0:0': np_img_array})
+        output = persisted_sess.run(softmax_tensor, {'0:0': np_img_array})
     else:
-        output = persisted_sess.run(softmax_tensor, {'160x120/0:0': np_img_array})
+        output = persisted_sess.run(softmax_tensor, {'0:0': np_img_array})
     inference_time = round(((time.time() - start) * 1000), 2)
     print("TF> DONE, inference total time:", inference_time)
     headcount, dens_map = process_predictions(output, downscale_dens_map)
@@ -212,7 +212,7 @@ with gfile.FastGFile(model_160x120_path, 'rb') as f:
 with gfile.FastGFile(model_640x480_path, 'rb') as f:
     graph_def_640x480 = tf.compat.v1.GraphDef()
     graph_def_640x480.ParseFromString(f.read())
-    graph_640x480 = tf.import_graph_def(graph_def_640x480)
+    graph_640x480 = tf.import_graph_def(graph_def_640x480, name='')
     graph2 = tf.import_graph_def(graph_def_640x480, name='640x480')
     persisted_sess_640x480 = tf.compat.v1.Session(graph2)
 

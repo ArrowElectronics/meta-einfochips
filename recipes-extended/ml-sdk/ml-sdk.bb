@@ -2,8 +2,9 @@ DESCRIPTION = "Module which add/copy required machine learning related files on 
 LICENSE = "CLOSED"
 
 SRC_URI = 	" \
-		 file://tensorflow-1.15.0-cp37-cp37m-linux_aarch64.whl \
-		 file://grpcio-1.33.2-cp37-cp37m-linux_aarch64.whl \
+		 file://tensorflow_aarch64-2.7.0-cp39-cp39-linux_aarch64.whl \
+		 file://tensorflow_io_gcs_filesystem-0.23.1-cp39-cp39-linux_aarch64.whl \
+		 file://grpcio-1.37.1-cp39-cp39-linux_aarch64.whl \
 		 file://setup_ml_demo.sh \
 		 file://basler \
 		 file://armnn  \
@@ -22,8 +23,9 @@ do_install() {
 	cp -r ${S}/armnn/* ${D}/opt/armnn/
 	chmod -R 777 ${D}/opt/armnn
 
-	install -m 0775 ${S}/tensorflow-1.15.0-cp37-cp37m-linux_aarch64.whl ${D}/home/root/
-	install -m 0775 ${S}/grpcio-1.33.2-cp37-cp37m-linux_aarch64.whl ${D}/home/root/
+	install -m 0775 ${S}/tensorflow_aarch64-2.7.0-cp39-cp39-linux_aarch64.whl ${D}/home/root/
+	install -m 0775 ${S}/tensorflow_io_gcs_filesystem-0.23.1-cp39-cp39-linux_aarch64.whl ${D}/home/root/
+	install -m 0775 ${S}/grpcio-1.37.1-cp39-cp39-linux_aarch64.whl ${D}/home/root/
 	install -m 0775 ${S}/setup_ml_demo.sh ${D}/home/root/
 	
 	cp -r ${S}/basler/pylon-5.1.0.12682-arm64/pylon5/* ${D}/opt/pylon5/
@@ -46,5 +48,3 @@ INSANE_SKIP_${PN} = " already-stripped debug-files dev-so file-rdeps rpaths stat
 SKIP_FILEDEPS_${PN} = "1"
 
 RDEPENDS_${PN} += "bash"
-
-

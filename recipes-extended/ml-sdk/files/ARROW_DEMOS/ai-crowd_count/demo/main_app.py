@@ -141,7 +141,7 @@ class ImageWidget(QWidget):
         #TODO: dont spawn a new pixmapevery time, what the hell
         # self.pixmap = QPixmap(image_path)
         self.image = QPixmap(image_path)
-        self.image = self.image.scaled(self.width, self.height)
+        self.image = self.image.scaled(round(self.width), round(self.height))
         self.image_label.setPixmap(self.image)
 
     def set_pixmap(self, pixmap):
