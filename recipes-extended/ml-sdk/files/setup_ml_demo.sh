@@ -25,7 +25,7 @@ then
     exit 0
 fi
 
-pkgs='absl-py astunparse flatbuffers gast google-pasta h5py keras keras-preprocessing libclang numpy opt-einsum protobuf six scikit-learn tensorboard tensorflow-estimator termcolor typing-extensions wheel wrapt opencv-python'
+pkgs='absl-py astunparse flatbuffers gast google-pasta h5py keras keras-preprocessing libclang numpy opt-einsum protobuf six scikit-learn tensorboard tensorflow-estimator termcolor typing-extensions wheel wrapt'
 
 for pkg in $pkgs; do
 	pip3 list | grep $pkg
