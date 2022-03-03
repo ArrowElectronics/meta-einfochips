@@ -14,7 +14,7 @@ set -f
 echo "Content-type: text/plain; charset=iso-8859-1"
 echo
 
-EUI64=`cat /usr/share/apache2/cgi-bin/zigbee/EUI64`
+EUI64=`cat /usr/share/apache2/htdocs/zigbee/EUI64`
 
 if [[ $? != 0 ]]
 then

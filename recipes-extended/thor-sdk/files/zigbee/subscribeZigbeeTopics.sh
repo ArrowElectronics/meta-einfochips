@@ -12,13 +12,13 @@
 set -f
 
 
-cat /var/log/syslog | grep -i Z3GatewayHost | grep EUI64 | awk '{ print $10 }' > /usr/share/apache2/cgi-bin/zigbee/EUI64
+cat /var/log/syslog | grep -i Z3GatewayHost | grep EUI64 | awk '{ print $10 }' > /usr/share/apache2/htdocs/zigbee/EUI64
 
-EUI64=`cat /usr/share/apache2/cgi-bin/zigbee/EUI64`
+EUI64=`cat /usr/share/apache2/htdocs/zigbee/EUI64`
 
 if [[ $? != 0 ]]
 then
-    echo "ERROR !!! Please check zigbee service is running and also write correct EUI64 in /usr/share/apache2/cgi-bin/zigbee/EUI64 file"
+    echo "ERROR !!! Please check zigbee service is running and also write correct EUI64 in /usr/share/apache2/htdocs/zigbee/EUI64 file"
     exit -1
 fi
 

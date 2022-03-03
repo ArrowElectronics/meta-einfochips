@@ -54,8 +54,7 @@ var pairingDevicesList = [];
 
   $.ajax({
       type: "POST",
-      //url: "http://localhost/cgi-bin/sendData.php",
-      url: 'https://localhost/cgi-bin/zigbee/sendData.php',
+      url: 'https://localhost/zigbee/sendData.php',
       dataType: "text",
       data: { json: JSON.stringify(pairingDevicesList) },
       success: function () {
@@ -73,8 +72,7 @@ function serverDataUpdate(){
   var items = [];
   $.ajax({
     type: "GET",
-     //url: "http://localhost/cgi-bin/serverEvent.php",
-    url: "https://localhost/cgi-bin/zigbee/serverEvent.php",
+    url: "https://localhost/zigbee/serverEvent.php",
     crossDomain: true,
     cache: true,
     dataType :"JSON",

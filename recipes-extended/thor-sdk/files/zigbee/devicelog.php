@@ -9,7 +9,7 @@ $first = "[";
 
 while(! feof($file))
 {
-  $lines = COUNT(FILE($file));
+//  $lines = COUNT(FILE($file));
 
   $first= $first.fgets($file);
 

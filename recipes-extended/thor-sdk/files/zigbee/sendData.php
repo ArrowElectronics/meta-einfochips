@@ -4,7 +4,7 @@ header('Access-Control-Allow-Origin: *');
 header("Content-Type: application/json; charset=UTF-8");
 
 
-$filename = "lightinfo.json";
+$filename = "/usr/share/apache2/htdocs/zigbee/lightinfo.json";
 $json = $_POST['json'];
 
 

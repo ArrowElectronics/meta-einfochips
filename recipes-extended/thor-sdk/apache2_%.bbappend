@@ -34,6 +34,8 @@ do_install_append() {
 
 	cp -r ${WORKDIR}/zigbee/ZigBeeWebApplication ${D}${datadir}/apache2/htdocs/
 
+	install -d ${D}${datadir}/apache2/htdocs/zigbee
+	mv ${D}${datadir}/apache2/cgi-bin/zigbee ${D}${datadir}/apache2/htdocs
 }
 
 CONFFILES_${PN} += " ${sysconfdir}/${BPN}/httpd-ssl.conf "

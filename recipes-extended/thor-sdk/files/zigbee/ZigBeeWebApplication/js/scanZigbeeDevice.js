@@ -4,7 +4,6 @@
     ColorDimmableLight:"0x0102",
     ONOFFLightSwitch:"0x0103"
   }
-
   var modal = document.getElementById('myModal');
   var span = document.getElementsByClassName("close")[0];
 
@@ -25,7 +24,7 @@
           document.getElementById("label").style.display = "block";
       }
       startScaningZigbeeDevices()
-      myVar = setTimeout(hideLoaderPage, 150000);
+      myVar = setTimeout(hideLoaderPage, 50000);
  }
 
 function hideLoaderPage() {
@@ -39,8 +38,7 @@ function startScaningZigbeeDevices(){
     $.ajax({
       type: 'POST',
       dataType: "script",
-        url: 'https://localhost/cgi-bin/zigbee/scanZigbeeDevices.sh',
-
+        url: 'https://localhost/zigbee/scanZigbeeDevices.sh',
       success: function(data,textStatus, xhr) {
             console.log(xhr.status);
             console.log("Success");
@@ -57,13 +55,12 @@ function startScaningZigbeeDevices(){
   var indexI ,indexJ, indexk, dataNumlenght;
 
     $.ajax({
-      url: 'https://localhost/cgi-bin/zigbee/devicelog.php',
+      url: 'https://localhost/zigbee/devicelog.php',
 
 
       dataType :"JSON",
       success : function(data)
       {
-
         dataNumlenght = data.length;
        for(indexI = 0; indexI < dataNumlenght; indexI++)
       {
@@ -146,7 +143,7 @@ function startScaningZigbeeDevices(){
 }
 function selectPairingRowByCheckBox(index) {
 
-          if($("#devicetype_"+ index).text() === "ON-OFF Light" || $("#devicetype_"+ index).text() ==="Color Dimmable Light")
+          if($("#devicetype_"+ index).text() === "ON-OFF Light" || $("#devicetype_"+ index).text() ==="Dimmable Light")
           {
             $("#deviceName_"+ index).prop("contenteditable", false);
            var rows = [];
@@ -191,7 +188,7 @@ function stopScaningZigbeeDevices(){
   $.ajax({
     type: 'POST',
     dataType: "script",
-    url: 'https://localhost/cgi-bin/zigbee/stopScanningZigbeeDevices.sh',
+    url: 'https://localhost/zigbee/stopScanningZigbeeDevices.sh',
 
     success: function(data,textStatus, xhr) {
           console.log(xhr.status);
